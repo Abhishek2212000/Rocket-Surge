@@ -45,15 +45,27 @@ body {
 }
 canvas#gc { display: block; width: 360px; height: 640px; }
 
+/* Tap layer: only active during gameplay. Hidden during menu/game-over so buttons work. */
+#tap-layer {
+  position: absolute; inset: 0;
+  z-index: 2;
+  cursor: pointer;
+  display: none;   /* hidden by default — only shown when ST_PLAYING */
+}
+#tap-layer.active { display: block; }
+
 /* ── MENU ── */
 #menu {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: space-between;
   padding: 0 0 20px;
-  pointer-events: all; transition: opacity 0.25s;
+  pointer-events: none;   /* container transparent — children opt-in */
+  transition: opacity 0.25s;
+  z-index: 10;
 }
 #menu.hidden { opacity:0; pointer-events:none; }
+#menu > * { pointer-events: all; }  /* every direct child is clickable */
 
 .menu-top {
   width: 100%; display: flex; justify-content: space-between;
@@ -466,6 +478,8 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 <body>
 <div id="wrap">
   <canvas id="gc" width="360" height="640"></canvas>
+  <!-- Invisible tap layer - sits behind all UI, only catches game taps -->
+  <div id="tap-layer"></div>
 
   <!-- ── MENU OVERLAY ── -->
   <div id="menu">
@@ -496,7 +510,7 @@ canvas#gc { display: block; width: 360px; height: 640px; }
       </div>
     </div>
 
-    <div class="tap-prompt" id="tap-prompt">
+    <div class="tap-prompt" id="tap-prompt" onclick="G.tap()" style="cursor:pointer;">
       <div class="tap-ring">🚀</div>
       <div class="tap-label">Tap to fly</div>
     </div>
@@ -2800,6 +2814,7 @@ class GameEngine {
       document.getElementById('menu').classList.add('hidden');
       document.getElementById('score-hud').classList.add('show');
       document.getElementById('ingame-mute').classList.add('show');
+      document.getElementById('tap-layer').classList.add('active');
       SFX.startMusic();
       return;
     }
@@ -2816,6 +2831,7 @@ class GameEngine {
 
   die(){
     this.state=ST_DEAD;
+    document.getElementById('tap-layer').classList.remove('active');
     this.shakeT=0.5;
     this.combo=0;
     SFX.stopMusic();
@@ -2886,6 +2902,7 @@ class GameEngine {
     document.getElementById('score-hud').classList.remove('show');
     document.getElementById('combo-label').classList.remove('show');
     document.getElementById('ingame-mute').classList.remove('show');
+    document.getElementById('tap-layer').classList.remove('active');
     document.getElementById('menu').classList.remove('hidden');
     document.getElementById('menu-best-val').textContent=highScore;
   }
@@ -3005,19 +3022,15 @@ const G = new GameEngine();
 // The #menu overlay sits above the canvas with pointer-events:all.
 // So we listen on #wrap which captures all clicks regardless of which child was hit.
 // We check that no sheet/modal is open before passing the tap to the game.
-function handleTap(){
-  const taskOpen   = document.getElementById('task-sheet').classList.contains('up');
-  const shopOpen   = document.getElementById('shop-modal').style.opacity === '1' ||
-                     document.getElementById('shop-modal').classList.contains('show');
-  const walletOpen = document.getElementById('wallet-modal').classList.contains('show');
-  if(taskOpen || shopOpen || walletOpen) return;
-  if(G.state !== ST_DEAD) G.tap();
-}
-
-const wrap = document.getElementById('wrap');
-wrap.addEventListener('click', handleTap);
-wrap.addEventListener('touchstart', e=>{ e.preventDefault(); handleTap(); }, {passive:false});
-document.addEventListener('keydown', e=>{ if(e.code==='Space'){ e.preventDefault(); if(G.state!==ST_DEAD) G.tap(); }});
+// ── INPUT ──
+// Tap-layer is only visible during ST_PLAYING — it catches in-flight taps
+const tapLayer = document.getElementById('tap-layer');
+tapLayer.addEventListener('click', () => { if(G.state===ST_PLAYING) G.tap(); });
+tapLayer.addEventListener('touchstart', e=>{ e.preventDefault(); if(G.state===ST_PLAYING) G.tap(); }, {passive:false});
+// Keyboard spacebar
+document.addEventListener('keydown', e=>{
+  if(e.code==='Space'){ e.preventDefault(); if(G.state===ST_PLAYING) G.tap(); }
+});
 
 // ── VIEWPORT SCALING — fit 360×640 to any screen ──────────────────
 function scaleGame(){
