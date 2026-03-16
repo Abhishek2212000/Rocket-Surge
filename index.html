@@ -28,10 +28,10 @@
 
 body {
   background: radial-gradient(ellipse at 50% 0%, #0a1628 0%, #000 70%);
-  display: flex; justify-content: center; align-items: center;
   width: 100vw; height: 100vh;
   overflow: hidden; user-select: none; touch-action: none;
   font-family: 'Nunito', sans-serif;
+  position: relative;
 }
 
 #wrap {
@@ -2795,7 +2795,8 @@ class GameEngine {
   tap(){
     if(this.state===ST_MENU){
       this.state=ST_PLAYING;
-      this.player.startPlay=(()=>{ this.player.playing=true; this.player.vy=-200; })();
+      this.player.playing=true;
+      this.player.vy=-200;
       document.getElementById('menu').classList.add('hidden');
       document.getElementById('score-hud').classList.add('show');
       document.getElementById('ingame-mute').classList.add('show');
@@ -3001,20 +3002,39 @@ class GameEngine {
 const G = new GameEngine();
 
 // ── INPUT ──
-canvas.addEventListener('click',()=>{ if(G.state!==ST_DEAD) G.tap(); });
-canvas.addEventListener('touchstart',e=>{ e.preventDefault(); if(G.state!==ST_DEAD) G.tap(); },{passive:false});
-document.addEventListener('keydown',e=>{ if(e.code==='Space'&&G.state!==ST_DEAD){e.preventDefault();G.tap();} });
+// The #menu overlay sits above the canvas with pointer-events:all.
+// So we listen on #wrap which captures all clicks regardless of which child was hit.
+// We check that no sheet/modal is open before passing the tap to the game.
+function handleTap(){
+  const taskOpen   = document.getElementById('task-sheet').classList.contains('up');
+  const shopOpen   = document.getElementById('shop-modal').style.opacity === '1' ||
+                     document.getElementById('shop-modal').classList.contains('show');
+  const walletOpen = document.getElementById('wallet-modal').classList.contains('show');
+  if(taskOpen || shopOpen || walletOpen) return;
+  if(G.state !== ST_DEAD) G.tap();
+}
+
+const wrap = document.getElementById('wrap');
+wrap.addEventListener('click', handleTap);
+wrap.addEventListener('touchstart', e=>{ e.preventDefault(); handleTap(); }, {passive:false});
+document.addEventListener('keydown', e=>{ if(e.code==='Space'){ e.preventDefault(); if(G.state!==ST_DEAD) G.tap(); }});
 
 // ── VIEWPORT SCALING — fit 360×640 to any screen ──────────────────
 function scaleGame(){
   const wrap = document.getElementById('wrap');
   const scaleX = window.innerWidth  / 360;
   const scaleY = window.innerHeight / 640;
-  const scale  = Math.min(scaleX, scaleY); // letterbox
-  wrap.style.transform = `scale(${scale})`;
-  // Centre via margin since transform-origin is center
-  wrap.style.marginLeft = `${(window.innerWidth  - 360) / 2}px`;
-  wrap.style.marginTop  = `${(window.innerHeight - 640) / 2}px`;
+  const scale  = Math.min(scaleX, scaleY);
+  const scaledW = 360 * scale;
+  const scaledH = 640 * scale;
+  const left = (window.innerWidth  - scaledW) / 2;
+  const top  = (window.innerHeight - scaledH) / 2;
+  // Use top-left transform-origin so translate matches the visual position exactly
+  wrap.style.position       = 'absolute';
+  wrap.style.transformOrigin = 'top left';
+  wrap.style.transform      = `translate(${left}px, ${top}px) scale(${scale})`;
+  wrap.style.left = '0';
+  wrap.style.top  = '0';
 }
 scaleGame();
 window.addEventListener('resize', scaleGame);
