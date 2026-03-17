@@ -61,7 +61,7 @@ canvas#gc { display: block; width: 360px; height: 640px; }
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: space-between;
-  padding: 0 0 12px;
+  padding: 0 0 92px;
   pointer-events: none;
   transition: opacity 0.25s;
   z-index: 10;
@@ -69,7 +69,7 @@ canvas#gc { display: block; width: 360px; height: 640px; }
   box-sizing: border-box;
 }
 #menu.hidden { opacity:0; pointer-events:none; }
-#menu > * { pointer-events: all; }  /* every direct child is clickable */
+#menu > * { pointer-events: all; }
 
 .menu-top {
   width: 100%; display: flex; justify-content: space-between;
@@ -214,19 +214,60 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 }
 
 /* Bottom nav */
-.menu-bottom-nav { width:100%; padding:0 10px; display:flex; gap:5px; }
-.nav-btn {
-  flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
-  padding: 9px 4px;
-  background: rgba(255,255,255,0.13);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.22);
-  border-radius: 16px; color:#fff; cursor:pointer; transition: all 0.12s;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18);
+/* ── NAV LAYER — completely outside canvas ── */
+#nav-layer {
+  position: fixed;
+  z-index: 100;
+  pointer-events: none;
+  display: none;
+  width: 360px;
 }
-.nav-btn:active { transform:scale(0.93); background:rgba(255,255,255,0.22); }
-.nav-btn .nb-icon { font-size: 18px; }
-.nav-btn .nb-label { font-size: 8px; font-weight: 900; color: rgba(255,255,255,0.75); letter-spacing: 0.5px; text-transform: uppercase; }
+#nav-layer.visible { display: block; }
+#nav-layer .menu-bottom-nav { pointer-events: all; }
+
+.menu-bottom-nav {
+  width:100%;
+  padding:8px 10px 12px;
+  display:flex;
+  gap:7px;
+  background:#111827;
+  border-radius:0 0 28px 28px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.nav-btn {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:13px 4px 11px;
+  border:none;
+  border-radius:16px;
+  color:#fff;
+  cursor:pointer;
+  transition:transform 0.1s;
+  position:relative;
+  overflow:hidden;
+}
+.nav-btn:active { transform:scale(0.91); }
+.nav-btn .nb-icon {
+  font-size:26px;
+  line-height:1;
+}
+.nav-btn .nb-label {
+  font-size:10px;
+  font-weight:900;
+  color:#fff;
+  letter-spacing:0.3px;
+  text-transform:uppercase;
+}
+.nb-tasks  { background:#0ea5e9; box-shadow:0 4px 0 #0369a1; }
+.nb-shop   { background:#a855f7; box-shadow:0 4px 0 #7e22ce; }
+.nb-invite { background:#22c55e; box-shadow:0 4px 0 #15803d; }
+.nb-ranks  { background:#f59e0b; box-shadow:0 4px 0 #92400e; }
+.nb-help   { background:#ef4444; box-shadow:0 4px 0 #991b1b; }
+.nb-tasks::before,.nb-shop::before,.nb-invite::before,.nb-ranks::before,.nb-help::before { display:none; }
 
 /* ── IN-GAME MUTE ── */
 #ingame-mute {
@@ -277,10 +318,10 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 #go-panel {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-  padding-bottom: 18px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 200;
+  padding-bottom: 28px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 500;
 }
 #go-panel.show { opacity:1; pointer-events:all; }
-.go-backdrop { position:absolute; inset:0; background: linear-gradient(180deg, transparent 0%, rgba(0,5,20,0.75) 40%, rgba(0,5,20,0.92) 70%); }
+.go-backdrop { position:absolute; inset:0; background: linear-gradient(180deg, transparent 15%, rgba(5,10,40,0.80) 50%, rgba(5,10,40,0.97) 68%, rgba(5,10,40,1) 100%); pointer-events:none; }
 .go-card {
   position: relative; width: 100%; padding: 0 12px 6px;
   transform: translateY(50px); opacity: 0;
@@ -338,12 +379,14 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 /* Action buttons */
 .action-row { display:flex; gap:8px; margin-bottom:8px; }
 .act-btn {
-  flex:1; border:none; border-radius:var(--r-md); padding:14px 8px;
+  flex:1; border:none; border-radius:var(--r-md); padding:15px 8px; min-height:54px;
   display:flex; flex-direction:column; align-items:center; gap:3px;
-  cursor:pointer; transition: transform 0.12s, filter 0.12s;
+  cursor:pointer; transition: transform 0.12s;
   font-family:'Nunito',sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
-.act-btn:active { transform:scale(0.92); filter:brightness(0.9); }
+.act-btn:active { transform:scale(0.92); }
 .act-btn .ab-icon { font-size:20px; }
 .act-btn .ab-label { font-size:11px; font-weight:900; letter-spacing:0.5px; }
 .btn-revive {
@@ -357,22 +400,28 @@ canvas#gc { display: block; width: 360px; height: 640px; }
   box-shadow: 0 6px 20px rgba(255,100,0,0.45), inset 0 1px 0 rgba(255,255,255,0.3);
 }
 .btn-share {
-  background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.15);
+  background: #3b82f6; border: none;
   color: #fff; flex:0 0 50px; padding:14px 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 0 #1d4ed8;
 }
 
 /* Sec row */
-.sec-row { display:flex; gap:7px; }
+.sec-row { display:flex; gap:8px; margin-top:2px; }
 .sec-btn {
-  flex:1; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.28);
-  border-radius: var(--r-sm); padding: 10px 6px;
+  flex:1;
+  border:none;
+  border-radius: var(--r-sm); padding: 13px 6px;
+  min-height: 48px;
   display:flex; align-items:center; justify-content:center; gap:6px;
-  cursor:pointer; transition: all 0.12s; color:#fff;
-  font-family:'Nunito',sans-serif; font-weight:800; font-size:11px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+  cursor:pointer; transition: transform 0.12s; color:#fff;
+  font-family:'Nunito',sans-serif; font-weight:900; font-size:12px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
-.sec-btn:active { transform:scale(0.93); background:rgba(255,255,255,0.22); }
+.sec-btn:active { transform:scale(0.93); }
+.sec-btn-tasks  { background:#0ea5e9; box-shadow:0 4px 0 #0369a1; }
+.sec-btn-shop   { background:#a855f7; box-shadow:0 4px 0 #7e22ce; }
+.sec-btn-ranks  { background:#f59e0b; box-shadow:0 4px 0 #92400e; }
 
 /* ── TASK SHEET ── */
 #task-sheet {
@@ -621,28 +670,6 @@ canvas#gc { display: block; width: 360px; height: 640px; }
       <div class="tap-label">Tap to fly</div>
     </div>
 
-    <div class="menu-bottom-nav">
-      <div class="nav-btn" onclick="openTasks()">
-        <span class="nb-icon">📋</span>
-        <span class="nb-label">Tasks</span>
-      </div>
-      <div class="nav-btn" onclick="openShop()">
-        <span class="nb-icon">🛍️</span>
-        <span class="nb-label">Shop</span>
-      </div>
-      <div class="nav-btn" onclick="shareGame()">
-        <span class="nb-icon">🔗</span>
-        <span class="nb-label">Invite</span>
-      </div>
-      <div class="nav-btn" onclick="openLeaderboard()">
-        <span class="nb-icon">🏆</span>
-        <span class="nb-label">Ranks</span>
-      </div>
-      <div class="nav-btn" onclick="openHelp()">
-        <span class="nb-icon">❓</span>
-        <span class="nb-label">Help</span>
-      </div>
-    </div>
   </div>
 
   <!-- ── IN-GAME MUTE BUTTON ── -->
@@ -712,13 +739,13 @@ canvas#gc { display: block; width: 360px; height: 640px; }
       </div>
 
       <div class="sec-row">
-        <button class="sec-btn" onclick="openTasks()">
+        <button class="sec-btn sec-btn-tasks" onclick="openTasks()">
           <span>📋</span> Earn Gems
         </button>
-        <button class="sec-btn" onclick="openShop()">
+        <button class="sec-btn sec-btn-shop" onclick="openShop()">
           <span>🛍️</span> Shop
         </button>
-        <button class="sec-btn" onclick="openLeaderboard()">
+        <button class="sec-btn sec-btn-ranks" onclick="openLeaderboard()">
           <span>🏆</span> Ranks
         </button>
       </div>
@@ -1109,6 +1136,32 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 
   <!-- ── TOAST ── -->
   <div id="toast"></div>
+</div><!-- /#wrap -->
+
+<!-- ── NAV BAR — own layer outside canvas, no game colours bleed in ── -->
+<div id="nav-layer">
+  <div class="menu-bottom-nav" id="main-nav">
+    <div class="nav-btn nb-tasks" onclick="openTasks()">
+      <span class="nb-icon">📋</span>
+      <span class="nb-label">Tasks</span>
+    </div>
+    <div class="nav-btn nb-shop" onclick="openShop()">
+      <span class="nb-icon">🛍️</span>
+      <span class="nb-label">Shop</span>
+    </div>
+    <div class="nav-btn nb-invite" onclick="shareGame()">
+      <span class="nb-icon">🔗</span>
+      <span class="nb-label">Invite</span>
+    </div>
+    <div class="nav-btn nb-ranks" onclick="openLeaderboard()">
+      <span class="nb-icon">🏆</span>
+      <span class="nb-label">Ranks</span>
+    </div>
+    <div class="nav-btn nb-help" onclick="openHelp()">
+      <span class="nb-icon">❓</span>
+      <span class="nb-label">Help</span>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1725,9 +1778,11 @@ function openWallet() { SFX.tap(); document.getElementById('wallet-modal').class
 function closeWallet(){ SFX.tap(); document.getElementById('wallet-modal').classList.remove('show'); }
 function showGameOver(){
   document.getElementById('go-panel').classList.add('show');
+  document.getElementById('nav-layer').classList.remove('visible');
+  document.getElementById('nav-layer').classList.remove('visible');
   document.getElementById('score-hud').classList.remove('show');
 }
-function hideGameOver(){ document.getElementById('go-panel').classList.remove('show'); }
+function hideGameOver(){ document.getElementById('go-panel').classList.remove('show'); document.getElementById('nav-layer').classList.add('visible'); }
 
 // ─── YOUR CREDENTIALS — fill these in ────────────────────────────────
 const BOT_USERNAME      = 'RocketSurge_bot';
@@ -4128,6 +4183,7 @@ class GameEngine {
       this.player.playing=true;
       this.player.vy=-200;
       document.getElementById('menu').classList.add('hidden');
+      document.getElementById('nav-layer').classList.remove('visible');
       document.getElementById('score-hud').classList.add('show');
       document.getElementById('ingame-mute').classList.add('show');
       document.getElementById('tap-layer').classList.add('active');
@@ -4240,6 +4296,7 @@ class GameEngine {
     document.getElementById('ingame-mute').classList.remove('show');
     document.getElementById('tap-layer').classList.remove('active');
     document.getElementById('menu').classList.remove('hidden');
+    document.getElementById('nav-layer').classList.add('visible');
     document.getElementById('menu-best-val').textContent=highScore;
   }
 
@@ -4478,6 +4535,7 @@ document.addEventListener('keydown', e=>{
 // ── VIEWPORT SCALING — fit 360×640 to any screen ──────────────────
 function scaleGame(){
   const wrap = document.getElementById('wrap');
+  const nav  = document.getElementById('nav-layer');
   const scaleX = window.innerWidth  / 360;
   const scaleY = window.innerHeight / 640;
   const scale  = Math.min(scaleX, scaleY);
@@ -4485,12 +4543,24 @@ function scaleGame(){
   const scaledH = 640 * scale;
   const left = (window.innerWidth  - scaledW) / 2;
   const top  = (window.innerHeight - scaledH) / 2;
-  // Use top-left transform-origin so translate matches the visual position exactly
-  wrap.style.position       = 'absolute';
+
+  wrap.style.position        = 'absolute';
   wrap.style.transformOrigin = 'top left';
-  wrap.style.transform      = `translate(${left}px, ${top}px) scale(${scale})`;
+  wrap.style.transform       = `translate(${left}px, ${top}px) scale(${scale})`;
   wrap.style.left = '0';
   wrap.style.top  = '0';
+
+  // Position nav layer to sit flush at the bottom of the scaled wrap
+  if(nav){
+    nav.style.position      = 'fixed';
+    nav.style.width         = '360px';
+    nav.style.left          = left + 'px';
+    nav.style.top           = (top + scaledH - 82 * scale) + 'px';
+    nav.style.transformOrigin = 'top left';
+    nav.style.transform     = `scale(${scale})`;
+    nav.style.zIndex        = '100';
+    nav.style.pointerEvents = 'none';
+  }
 }
 scaleGame();
 window.addEventListener('resize', scaleGame);
@@ -4506,6 +4576,7 @@ setTimeout(()=>{
   _populatePlayerIdentity();
 }, 150);
 G.start();
+document.getElementById('nav-layer').classList.add('visible');
 </script>
 </body>
 </html>
