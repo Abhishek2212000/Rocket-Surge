@@ -1499,6 +1499,7 @@ const W=360, H=640;
 const ST_MENU    = 0;
 const ST_PLAYING = 1;
 const ST_DEAD    = 2;
+const ST_REVIVE  = 3;   // countdown before resuming after revive
 
 // ── Shared game constants ── (single source of truth)
 const PLAYER_R  = 14;   // collision circle radius (px)
@@ -2846,6 +2847,27 @@ class GameEngine {
 
     if(this.state===ST_MENU) this.player.bob(dt);
 
+    if(this.state===ST_REVIVE){
+      // Pipes keep scrolling so player can see what's ahead
+      for(let i=this.pipes.length-1;i>=0;i--){
+        const p=this.pipes[i];
+        p.update(this.pipeSpeed * 0.4);   // slow scroll during countdown
+        if(!p.alive) this.pipes.splice(i,1);
+      }
+      // Player hovers gently in place
+      this.player.bob(dt);
+      // Tick countdown
+      this.reviveTimer -= dt;
+      if(this.reviveTimer <= 0){
+        // Countdown done — go!
+        this.state = ST_PLAYING;
+        this.player.playing = true;
+        this.player.vy = -160;
+        document.getElementById('tap-layer').classList.add('active');
+        SFX.tap();
+      }
+    }
+
     if(this.state===ST_PLAYING){
       this.player.update(dt);
       this.pipeTimer++;
@@ -2972,10 +2994,23 @@ class GameEngine {
 
   revive(){
     if(this.state!==ST_DEAD) return;
-    this.pipes=this.pipes.filter(p=>p.x>this.player.x+100);
-    this.player.y=H/2; this.player.vy=-200; this.player.rot=20;
-    this.state=ST_PLAYING;
-    isNewBest=false;
+
+    // ── 1. Clear ALL pipes within 240px ahead of player (safe zone) ──
+    //    and any pipe that's already passed the player
+    this.pipes = this.pipes.filter(p => p.x > this.player.x + 240);
+
+    // ── 2. Reset player to screen centre, hovering gently ──
+    this.player.y   = H / 2;
+    this.player.vy  = 0;
+    this.player.rot = 0;
+    this.player.playing = true;
+
+    // ── 3. Enter countdown state ──
+    this.state        = ST_REVIVE;
+    this.reviveTimer  = 3.0;   // 3 seconds countdown
+    isNewBest         = false;
+
+    // Show HUD but keep tap-layer off until countdown ends
     document.getElementById('score-hud').classList.add('show');
     document.getElementById('ingame-mute').classList.add('show');
     SFX.startMusic();
@@ -3054,10 +3089,62 @@ class GameEngine {
     for(const p of this.pipes) p.draw(ctx);
     this.drawGround();
     for(const p of this.particles) p.draw(ctx);
-    this.player.draw(ctx,this.state===ST_MENU);
+    this.player.draw(ctx,this.state===ST_MENU || this.state===ST_REVIVE);
     this.drawScoreFloats(this._dt || 0.016);
 
     ctx.restore();
+
+    // ── REVIVE COUNTDOWN OVERLAY ──
+    if(this.state===ST_REVIVE){
+      const t    = this.reviveTimer;
+      const num  = Math.ceil(t);
+      const frac = t % 1;                    // 0→1 within each second
+      const pulse = 1.0 + (1-frac)*0.35;    // big on tick, shrinks down
+
+      // Dim vignette
+      ctx.save();
+      ctx.fillStyle='rgba(0,0,0,0.5)';
+      ctx.fillRect(0,0,W,H);
+
+      // "GET READY" eyebrow
+      ctx.font='800 11px Nunito,sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.letterSpacing='4px';
+      ctx.fillStyle='rgba(255,255,255,0.65)';
+      ctx.fillText('GET READY',W/2,H/2-58);
+
+      // Number — colour per second
+      const col = num===3?'#ff4455': num===2?'#ffaa00': '#00e676';
+      ctx.save();
+      ctx.translate(W/2, H/2-8);
+      ctx.scale(pulse, pulse);
+      ctx.shadowColor=col; ctx.shadowBlur=30;
+      ctx.font="900 78px 'Fredoka One',cursive";
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle=col;
+      ctx.fillText(num,0,0);
+      ctx.shadowBlur=0;
+      ctx.fillStyle='rgba(255,255,255,0.88)';
+      ctx.font="900 74px 'Fredoka One',cursive";
+      ctx.fillText(num,0,0);
+      ctx.restore();
+
+      // Circular progress ring
+      const ringR=48, swept=(1-(t/3))*Math.PI*2;
+      ctx.beginPath(); ctx.arc(W/2,H/2-8,ringR,0,Math.PI*2);
+      ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=5; ctx.stroke();
+      ctx.beginPath(); ctx.arc(W/2,H/2-8,ringR,-Math.PI/2,-Math.PI/2+swept);
+      ctx.strokeStyle=col; ctx.lineWidth=5; ctx.lineCap='round';
+      ctx.shadowColor=col; ctx.shadowBlur=14;
+      ctx.stroke(); ctx.shadowBlur=0;
+
+      // Bottom hint
+      ctx.font='700 11px Nunito,sans-serif';
+      ctx.fillStyle='rgba(255,255,255,0.45)';
+      ctx.fillText('Tap to fly when the countdown ends!',W/2,H/2+54);
+
+      ctx.restore();
+    }
   }
 
   drawBg(){
