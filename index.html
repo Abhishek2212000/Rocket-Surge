@@ -231,12 +231,13 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 
 .menu-bottom-nav {
   width:100%;
-  padding:8px 10px 12px;
+  padding:9px 10px 13px;
   display:flex;
-  gap:7px;
-  background:#111827;
+  gap:6px;
+  background:linear-gradient(180deg,#0f172a 0%,#0a0f1e 100%);
   border-radius:0 0 28px 28px;
-  border-top: 1px solid rgba(255,255,255,0.1);
+  border-top:1px solid rgba(255,255,255,0.08);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);
 }
 .nav-btn {
   flex:1;
@@ -244,42 +245,64 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:6px;
-  padding:13px 4px 11px;
+  gap:5px;
+  padding:11px 4px 10px;
   border:none;
-  border-radius:16px;
+  border-radius:18px;
   color:#fff;
   cursor:pointer;
-  transition:transform 0.1s;
+  transition:transform 0.12s, box-shadow 0.12s;
   position:relative;
   overflow:hidden;
 }
-.nav-btn:active { transform:scale(0.91); }
-.nav-btn .nb-icon {
-  font-size:22px;
-  line-height:1;
+.nav-btn::after {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0; height:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,0.18) 0%,rgba(255,255,255,0) 100%);
+  border-radius:18px 18px 0 0;
+  pointer-events:none;
 }
-/* White circle behind icon — guarantees contrast on any button colour */
+.nav-btn:active { transform:scale(0.90); box-shadow:none !important; }
+/* Icon circle */
 .nb-icon-wrap {
-  width:34px; height:34px;
-  background:rgba(255,255,255,0.22);
+  width:36px; height:36px;
+  background:rgba(0,0,0,0.25);
   border-radius:50%;
   display:flex; align-items:center; justify-content:center;
-  font-size:18px; line-height:1;
+  font-size:20px; line-height:1;
   flex-shrink:0;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.2);
 }
 .nav-btn .nb-label {
   font-size:10px;
-  font-weight:900;
-  color:#fff;
-  letter-spacing:0.3px;
+  font-weight:800;
+  color:rgba(255,255,255,0.92);
+  letter-spacing:0.2px;
   text-transform:uppercase;
+  text-shadow:0 1px 2px rgba(0,0,0,0.4);
 }
-.nb-tasks  { background:#0ea5e9; box-shadow:0 4px 0 #0369a1; }
-.nb-shop   { background:#a855f7; box-shadow:0 4px 0 #7e22ce; }
-.nb-invite { background:#22c55e; box-shadow:0 4px 0 #15803d; }
-.nb-ranks  { background:#f59e0b; box-shadow:0 4px 0 #92400e; }
-.nb-help   { background:#ef4444; box-shadow:0 4px 0 #991b1b; }
+/* Vivid gradient buttons — lighter top, richer bottom, coloured shadow */
+.nb-tasks {
+  background:linear-gradient(160deg,#38bdf8,#0284c7);
+  box-shadow:0 4px 0 #075985, 0 6px 16px rgba(14,165,233,0.35);
+}
+.nb-shop {
+  background:linear-gradient(160deg,#c084fc,#9333ea);
+  box-shadow:0 4px 0 #6b21a8, 0 6px 16px rgba(168,85,247,0.35);
+}
+.nb-invite {
+  background:linear-gradient(160deg,#4ade80,#16a34a);
+  box-shadow:0 4px 0 #14532d, 0 6px 16px rgba(34,197,94,0.35);
+}
+.nb-ranks {
+  background:linear-gradient(160deg,#fbbf24,#d97706);
+  box-shadow:0 4px 0 #92400e, 0 6px 16px rgba(245,158,11,0.35);
+}
+.nb-help {
+  background:linear-gradient(160deg,#f87171,#dc2626);
+  box-shadow:0 4px 0 #991b1b, 0 6px 16px rgba(239,68,68,0.3);
+}
 .nb-tasks::before,.nb-shop::before,.nb-invite::before,.nb-ranks::before,.nb-help::before { display:none; }
 
 /* ── IN-GAME MUTE ── */
@@ -393,30 +416,34 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 /* Action buttons */
 .action-row { display:flex; gap:7px; margin-bottom:7px; }
 .act-btn {
-  flex:1; border:none; border-radius:var(--r-md); padding:12px 8px; min-height:48px;
-  display:flex; flex-direction:column; align-items:center; gap:3px;
-  cursor:pointer; transition: transform 0.12s;
+  flex:1; border:none; border-radius:16px; padding:14px 8px; min-height:54px;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer; transition:transform 0.12s, box-shadow 0.12s;
   font-family:'Nunito',sans-serif;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  position:relative; overflow:hidden;
 }
-.act-btn:active { transform:scale(0.92); }
-.act-btn .ab-icon { font-size:20px; }
-.act-btn .ab-label { font-size:11px; font-weight:900; letter-spacing:0.5px; }
+.act-btn::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,0.2) 0%,rgba(255,255,255,0) 100%);
+  border-radius:16px 16px 0 0; pointer-events:none;
+}
+.act-btn:active { transform:scale(0.91); box-shadow:none !important; }
+.act-btn .ab-icon { font-size:22px; position:relative; z-index:1; }
+.act-btn .ab-label { font-size:11px; font-weight:900; letter-spacing:0.3px; position:relative; z-index:1; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,0.3); }
 .btn-revive {
-  background: linear-gradient(135deg, #00b347, #00e676);
-  color: #002a12;
-  box-shadow: 0 6px 20px rgba(0,200,100,0.45), inset 0 1px 0 rgba(255,255,255,0.3);
+  background:linear-gradient(160deg,#34d399,#059669);
+  box-shadow:0 4px 0 #065f46, 0 6px 20px rgba(5,150,105,0.4), inset 0 1px 0 rgba(255,255,255,0.25);
 }
 .btn-retry {
-  background: linear-gradient(135deg, #ff5500, #ffd200);
-  color: #1a0800;
-  box-shadow: 0 6px 20px rgba(255,100,0,0.45), inset 0 1px 0 rgba(255,255,255,0.3);
+  background:linear-gradient(160deg,#fb923c,#ea580c);
+  box-shadow:0 4px 0 #9a3412, 0 6px 20px rgba(234,88,12,0.4), inset 0 1px 0 rgba(255,255,255,0.25);
 }
 .btn-share {
-  background: #3b82f6; border: none;
-  color: #fff; flex:0 0 50px; padding:14px 0;
-  box-shadow: 0 4px 0 #1d4ed8;
+  background:linear-gradient(160deg,#60a5fa,#2563eb);
+  color:#fff; flex:0 0 52px; padding:14px 0;
+  box-shadow:0 4px 0 #1e40af, 0 6px 14px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
 }
 
 /* Sec row */
@@ -432,10 +459,16 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
-.sec-btn:active { transform:scale(0.93); }
-.sec-btn-tasks  { background:#0ea5e9; box-shadow:0 4px 0 #0369a1; }
-.sec-btn-shop   { background:#a855f7; box-shadow:0 4px 0 #7e22ce; }
-.sec-btn-ranks  { background:#f59e0b; box-shadow:0 4px 0 #92400e; }
+.sec-btn:active { transform:scale(0.93); box-shadow:none !important; }
+.sec-btn { position:relative; overflow:hidden; border-radius:var(--r-sm); }
+.sec-btn::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,0.2) 0%,rgba(255,255,255,0) 100%);
+  border-radius:var(--r-sm) var(--r-sm) 0 0; pointer-events:none;
+}
+.sec-btn-tasks { background:linear-gradient(160deg,#38bdf8,#0284c7); box-shadow:0 4px 0 #075985,0 5px 14px rgba(14,165,233,0.3); }
+.sec-btn-shop  { background:linear-gradient(160deg,#c084fc,#9333ea); box-shadow:0 4px 0 #6b21a8,0 5px 14px rgba(168,85,247,0.3); }
+.sec-btn-ranks { background:linear-gradient(160deg,#fbbf24,#d97706); box-shadow:0 4px 0 #92400e,0 5px 14px rgba(245,158,11,0.3); }
 
 /* ── TASK SHEET ── */
 #task-sheet {
@@ -473,13 +506,19 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 .task-name { font-size:13px; font-weight:800; color:#fff; }
 .task-rew { font-size:11px; color:var(--accent2); font-weight:700; margin-top:2px; }
 .task-do {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: linear-gradient(160deg,#fbbf24,#f59e0b);
   color: #1a0800; border:none; border-radius:var(--r-sm); padding:7px 14px;
   font-size:11px; font-weight:900; cursor:pointer; white-space:nowrap;
   font-family:'Nunito',sans-serif; letter-spacing:0.5px;
-  box-shadow: 0 3px 10px rgba(255,100,0,0.4); transition: all 0.12s;
+  box-shadow:0 3px 0 #92400e, 0 4px 12px rgba(245,158,11,0.35);
+  transition:transform 0.12s, box-shadow 0.12s; position:relative; overflow:hidden;
 }
-.task-do:active { transform:scale(0.92); }
+.task-do::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,0.25) 0%,rgba(255,255,255,0) 100%);
+  pointer-events:none;
+}
+.task-do:active { transform:scale(0.92); box-shadow:none; }
 .task-do.done {
   background: rgba(0,230,118,0.12); color:var(--green);
   border: 1px solid rgba(0,230,118,0.3); box-shadow: none;
@@ -615,13 +654,8 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 <!-- TON Connect UI SDK (required: Telegram Apps Center) -->
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js" onload="window.__tcReady=true;if(window.__tcInit)window.__tcInit();"></script>
-<!-- Telegram Mini Apps Analytics SDK (required: Telegram Apps Center) -->
-<script
-    async
-    src="https://tganalytics.xyz/index.js"
-    onload="initAnalytics()"
-    type="text/javascript"
-></script>
+<!-- Telegram Mini Apps Analytics (required: Telegram Apps Center) -->
+<!-- initAnalytics defined BEFORE async script per official docs -->
 <script>
     function initAnalytics() {
       window.telegramAnalytics.init({
@@ -630,6 +664,12 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
       });
     }
 </script>
+<script
+    async
+    src="https://tganalytics.xyz/index.js"
+    onload="initAnalytics()"
+    type="text/javascript"
+></script>
 </head>
 <body>
 <div id="wrap">
@@ -1026,27 +1066,41 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div>
           <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:1.5px;text-transform:uppercase;">This week's prize pool</div>
-          <div style="font-family:'Fredoka One',cursive;font-size:28px;color:#40c4ff;line-height:1.1;" id="prize-pool-big">Loading…</div>
+          <div style="font-family:'Fredoka One',cursive;font-size:28px;color:#40c4ff;line-height:1.1;" id="prize-pool-big">0.00 TON</div>
         </div>
         <div style="text-align:right;">
           <div style="font-size:11px;color:rgba(255,255,255,0.4);">Resets Monday</div>
           <div id="pool-timer" style="font-size:12px;font-weight:800;color:rgba(255,255,255,0.6);margin-top:2px;"></div>
         </div>
       </div>
-      <!-- Prize breakdown -->
+      <!-- Prize distribution — matches worker exactly -->
       <div style="display:flex;flex-direction:column;gap:5px;" id="prize-breakdown">
-        <div style="display:flex;justify-content:space-between;font-size:12px;">
-          <span style="color:rgba(255,255,255,0.6);">🥇 1st place</span><span style="color:#ffd200;font-weight:800;" id="prize-1st">–</span>
+        <div style="display:flex;justify-content:space-between;font-size:12px;align-items:center;">
+          <span style="color:rgba(255,255,255,0.6);">🥇 1st place <span style="color:rgba(255,255,255,0.35);font-size:10px;">30%</span></span>
+          <span style="color:#ffd200;font-weight:800;" id="prize-1st">–</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;">
-          <span style="color:rgba(255,255,255,0.6);">🥈 2nd place</span><span style="color:rgba(255,255,255,0.7);font-weight:700;" id="prize-2nd">–</span>
+        <div style="display:flex;justify-content:space-between;font-size:12px;align-items:center;">
+          <span style="color:rgba(255,255,255,0.6);">🥈 2nd place <span style="color:rgba(255,255,255,0.35);font-size:10px;">20%</span></span>
+          <span style="color:rgba(200,200,255,0.9);font-weight:700;" id="prize-2nd">–</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;">
-          <span style="color:rgba(255,255,255,0.6);">🥉 3rd place</span><span style="color:rgba(255,255,255,0.7);font-weight:700;" id="prize-3rd">–</span>
+        <div style="display:flex;justify-content:space-between;font-size:12px;align-items:center;">
+          <span style="color:rgba(255,255,255,0.6);">🥉 3rd place <span style="color:rgba(255,255,255,0.35);font-size:10px;">15%</span></span>
+          <span style="color:rgba(200,200,255,0.9);font-weight:700;" id="prize-3rd">–</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;">
-          <span style="color:rgba(255,255,255,0.6);">4th–10th</span><span style="color:rgba(255,255,255,0.5);" id="prize-rest">–</span>
+        <div style="height:1px;background:rgba(255,255,255,0.1);margin:3px 0;"></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;align-items:center;">
+          <span style="color:rgba(255,255,255,0.5);">🏆 4th–10th <span style="color:rgba(255,255,255,0.3);font-size:10px;">25% split</span></span>
+          <span style="color:rgba(255,255,255,0.5);" id="prize-rest">–</span>
         </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;align-items:center;">
+          <span style="color:rgba(255,255,255,0.4);">⭐ 11th–50th <span style="color:rgba(255,255,255,0.25);font-size:10px;">10% split</span></span>
+          <span style="color:rgba(255,255,255,0.4);" id="prize-long">–</span>
+        </div>
+      </div>
+      <!-- Pool sources explanation -->
+      <div style="margin-top:10px;padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:10px;font-size:10px;color:rgba(255,255,255,0.4);line-height:1.5;">
+        💡 Pool grows from: <b style="color:rgba(255,255,255,0.6);">20% of gem pack purchases</b> + manual top-ups.<br>
+        Min pool 1 TON to pay out. Min 10 ⚡ sparks to qualify. Paid within 24h of Monday reset.
       </div>
     </div>
 
@@ -2053,7 +2107,9 @@ async function _fetchSparkLeaderboard(){
       document.getElementById('prize-1st').textContent  = `${(pool_ton*0.30).toFixed(3)} TON`;
       document.getElementById('prize-2nd').textContent  = `${(pool_ton*0.20).toFixed(3)} TON`;
       document.getElementById('prize-3rd').textContent  = `${(pool_ton*0.15).toFixed(3)} TON`;
-      document.getElementById('prize-rest').textContent = `${(pool_ton*0.05/7).toFixed(4)} TON each`;
+      document.getElementById('prize-rest').textContent = `${(pool_ton*0.25/7).toFixed(4)} TON each`;
+      const longEl = document.getElementById('prize-long');
+      if(longEl) longEl.textContent = `${(pool_ton*0.10/40).toFixed(4)} TON each`;
     }
 
     // Rank
