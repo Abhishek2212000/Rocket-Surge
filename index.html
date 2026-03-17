@@ -7,9 +7,8 @@
 <!-- Telegram Mini App SDK -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <!-- TON Connect UI — required for Telegram Apps Center compliance -->
-<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js" crossorigin="anonymous"></script>
 <!-- Telegram Mini Apps Analytics SDK -->
-<script src="https://tganalytics.xyz/index.js" async id="tg-analytics"></script>
+
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -614,6 +613,18 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 
 </style>
 <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+<!-- TON Connect UI SDK (required: Telegram Apps Center) -->
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js" onload="window.__tcReady=true;if(window.__tcInit)window.__tcInit();"></script>
+<!-- Telegram Mini Apps Analytics SDK (required: Telegram Apps Center) -->
+<script>
+function initAnalytics(){
+  window.telegramAnalytics.init({
+    token: 'eyJhcHBfbmFtZSI6InJvY2tldF9zdXJnZSIsImFwcF91cmwiOiJodHRwczovL3QubWUvUm9ja2V0U3VyZ2VfYm90IiwiYXBwX2RvbWFpbiI6Imh0dHBzOi8vcm9ja2V0LXN1cmdlLnZlcmNlbC5hcHAvIn0=!kQlTYZWzmhb8sHfQ9FD2CpNK+YrSKT00SHWG731Q7RQ=',
+    appName: 'rocket_surge',
+  });
+}
+</script>
+<script async src="https://tganalytics.xyz/index.js" onload="initAnalytics()" type="text/javascript"></script>
 </head>
 <body>
 <div id="wrap">
@@ -2774,29 +2785,44 @@ function reviveWithAd(){
 let _tonConnectUI = null;
 let _walletAddress = null;
 
-function _initTonConnect(){
+// TON Connect — onload pattern, global is window.TonConnectUI on jsDelivr build
+window.__tcReady = false;
+window.__tcInit = function(){
   try{
-    const TC = (typeof TON_CONNECT_UI !== 'undefined') ? TON_CONNECT_UI : (typeof TonConnectUI !== 'undefined' ? {TonConnectUI} : null);
-    if(!TC){ console.log('TON Connect SDK not loaded'); return; }
-    _tonConnectUI = new TC.TonConnectUI({
-      manifestUrl:'https://rocket-surge-82t5.vercel.app/tonconnect-manifest.json',
-      buttonRootId:'ton-connect-button'
+    // jsDelivr build exposes TonConnectUI directly on window
+    // Official TON docs: global is TON_CONNECT_UI.TonConnectUI
+    const TCUI = (window.TON_CONNECT_UI && window.TON_CONNECT_UI.TonConnectUI) || window.TonConnectUI;
+    if(!TCUI){ console.log('TON Connect: global not found'); return; }
+    _tonConnectUI = new TCUI({
+      manifestUrl: 'https://rocket-surge-82t5.vercel.app/tonconnect-manifest.json',
+      buttonRootId: 'ton-connect-button'
     });
     _tonConnectUI.onStatusChange(wallet=>{
       if(wallet){
         _walletAddress = wallet.account.address;
         tonWallet = _walletAddress;
         saveData(); _updateWalletUI(true); closeWallet();
-        const inp=document.getElementById('wallet-input'); if(inp) inp.value=_walletAddress;
+        const inp = document.getElementById('wallet-input');
+        if(inp) inp.value = _walletAddress;
         toast('✅ TON wallet connected!','#40c4ff'); SFX.gem();
         TG.HapticFeedback.notificationOccurred('success');
-        _trackEvent('wallet_connected',{wallet:wallet.device?.appName||'unknown'});
+        _trackEvent('wallet_connected',{wallet: wallet.device?.appName||'unknown'});
       } else {
         _walletAddress=null; tonWallet=''; saveData(); _updateWalletUI(false);
       }
     });
-    if(_tonConnectUI.wallet){ _walletAddress=_tonConnectUI.wallet.account.address; tonWallet=_walletAddress; _updateWalletUI(true); }
-  }catch(e){ console.log('TON Connect init:',e); }
+    if(_tonConnectUI.wallet){
+      _walletAddress = _tonConnectUI.wallet.account.address;
+      tonWallet = _walletAddress;
+      _updateWalletUI(true);
+    }
+    console.log('✅ TON Connect initialized');
+  }catch(e){ console.log('TON Connect init error:',e); }
+};
+
+function _initTonConnect(){
+  // Called at boot — if script already loaded, run now; else onload handles it
+  if(window.__tcReady) window.__tcInit();
 }
 
 function connectWallet(type){
@@ -2826,19 +2852,12 @@ function _updateWalletUI(connected){
   if(inp&&connected&&tonWallet) inp.value=tonWallet;
 }
 
-// ─── TELEGRAM MINI APPS ANALYTICS (required for Telegram Apps Center) ─
-function _initAnalytics(){
-  try{
-    const tga = window.telegramAnalytics;
-    if(tga){
-      tga.init({ token:'eyJhcHBfbmFtZSI6InJvY2tldF9zdXJnZSIsImFwcF91cmwiOiJodHRwczovL3QubWUvUm9ja2V0U3VyZ2VfYm90IiwiYXBwX2RvbWFpbiI6Imh0dHBzOi8vcm9ja2V0LXN1cmdlLnZlcmNlbC5hcHAvIn0=!kQlTYZWzmhb8sHfQ9FD2CpNK+YrSKT00SHWG731Q7RQ=', appName:'RocketSurge' });
-      _trackEvent('app_open',{platform:TG.platform||'unknown'});
-    }
-  }catch(e){}
-}
+// ─── TELEGRAM MINI APPS ANALYTICS ───────────────────────────────────
+// Initialized via initAnalytics() global called from script onload in <head>
+function _initAnalytics(){ /* handled by initAnalytics() in <head> */ }
 
 function _trackEvent(event, params={}){
-  try{ if(window.telegramAnalytics) window.telegramAnalytics.track(event,params); }catch(e){}
+  try{ if(window.telegramAnalytics) window.telegramAnalytics.track(event, params); }catch(e){}
 }
 
 
