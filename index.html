@@ -654,8 +654,14 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 <!-- TON Connect UI SDK (required: Telegram Apps Center) -->
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js" onload="window.__tcReady=true;if(window.__tcInit)window.__tcInit();"></script>
-<!-- Telegram Mini Apps Analytics (required: Telegram Apps Center) -->
-<!-- initAnalytics defined BEFORE async script per official docs -->
+<!-- Telegram Mini Apps Analytics SDK (required: Telegram Apps Center) -->
+<!-- Per official TON docs: async script tag FIRST, then initAnalytics() function -->
+<script
+    async
+    src="https://tganalytics.xyz/index.js"
+    onload="initAnalytics()"
+    type="text/javascript"
+></script>
 <script>
     function initAnalytics() {
       window.telegramAnalytics.init({
@@ -664,12 +670,6 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
       });
     }
 </script>
-<script
-    async
-    src="https://tganalytics.xyz/index.js"
-    onload="initAnalytics()"
-    type="text/javascript"
-></script>
 </head>
 <body>
 <div id="wrap">
