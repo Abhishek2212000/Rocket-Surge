@@ -474,6 +474,7 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 @media (max-width: 360px) { #wrap { box-shadow:none; border-radius:0; } }
 
 </style>
+<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -1316,33 +1317,139 @@ function buyGemPack(id){
 }
 
 // ─── WATCH AD FOR GEMS ───────────────────────────────────────────────
+// ─── ADSGRAM INTEGRATION ─────────────────────────────────────────────
+// Block IDs: 25283 = revive ad  |  25284 = gem reward ad
+const ADSGRAM_REVIVE_ID = '25283';
+const ADSGRAM_GEM_ID    = '25284';
+
+// Pre-initialise controllers once (AdsGram recommends init early, show later)
+let _adsgramRevive = null;
+let _adsgramGem    = null;
+
+function _initAdsGram(){
+  if(!window.Adsgram) return;
+  try {
+    _adsgramRevive = window.Adsgram.init({ blockId: ADSGRAM_REVIVE_ID });
+    _adsgramGem    = window.Adsgram.init({ blockId: ADSGRAM_GEM_ID });
+  } catch(e){ console.warn('AdsGram init error:', e); }
+}
+// Try immediately, then retry after 3s if SDK loads late
+_initAdsGram();
+setTimeout(_initAdsGram, 3000);
+
+// Check if we're inside Telegram WebView
+function _inTelegram(){
+  return !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.platform !== 'unknown');
+}
+
+// Show an ad. controller = pre-inited AdController instance
+// In dev (non-Telegram): simulates a 2s ad then calls onReward
+function _showAd(controller, onReward, onError){
+  // Dev / browser fallback — simulate ad for testing
+  if(!window.Adsgram || !controller){
+    if(!_inTelegram()){
+      // Silently simulate in dev — no toast, just wait and reward
+      setTimeout(()=> onReward(), 2000);
+      return;
+    }
+    toast('Ads not available right now', '#ff8c00');
+    onError && onError();
+    return;
+  }
+  controller.show()
+    .then(result => {
+      // AdsGram resolves with {done:true} on full watch
+      onReward();
+    })
+    .catch(result => {
+      // result.error = true means ad failed to load
+      // result.done  = false means user closed before finish
+      if(result && result.error){
+        toast('Ad not available, try again later', '#ff8c00');
+      }
+      // If user just closed early — silent, no toast
+      onError && onError(result);
+    });
+}
+
+// ── Watch ad for gems (Tasks / Shop — Block 25284) ────────────────────
 function watchAdForGems(){
   if(adWatchCount >= MAX_ADS_PER_DAY){
-    toast(`Come back tomorrow for more ads! (${MAX_ADS_PER_DAY}/day limit)`,'#ff8c00');
+    toast(`Come back tomorrow! (${MAX_ADS_PER_DAY}/day limit)`,'#ff8c00');
     return;
   }
   const btn = document.getElementById('watch-ad-btn');
-  btn.textContent = '⏳ Loading...';
-  btn.disabled = true;
-  // Simulate AdsGram / real ad SDK call
-  setTimeout(()=>{
-    adWatchCount++;
-    gemCount += AD_GEM_REWARD;
-    updateGemUI(); saveData();
-    btn.textContent = 'WATCH';
-    btn.disabled = false;
-    const remaining = MAX_ADS_PER_DAY - adWatchCount;
-    toast(`+${AD_GEM_REWARD} 💎 Gems! (${remaining} ads left today)`,'#ffd200');
-    SFX.gem();
-    renderShopTab(_shopTab);
-    // Update ad button label
-    if(adWatchCount >= MAX_ADS_PER_DAY){
-      btn.textContent = '✅ Done';
-      btn.disabled = true;
-      btn.style.background = 'rgba(0,200,80,0.2)';
-      btn.style.color = '#00e676';
+  if(btn){ btn.textContent='⏳ Loading…'; btn.disabled=true; }
+
+  // Re-init controller if needed
+  if(!_adsgramGem && window.Adsgram){
+    _adsgramGem = window.Adsgram.init({ blockId: ADSGRAM_GEM_ID });
+  }
+
+  _showAd(_adsgramGem,
+    () => { // onReward
+      adWatchCount++;
+      gemCount += AD_GEM_REWARD;
+      updateGemUI(); saveData();
+      SFX.gem();
+      TG.HapticFeedback.notificationOccurred('success');
+      const remaining = MAX_ADS_PER_DAY - adWatchCount;
+      toast(`+${AD_GEM_REWARD} 💎 Gems! (${remaining} ads left today)`,'#ffd200');
+      if(btn){
+        if(adWatchCount >= MAX_ADS_PER_DAY){
+          btn.textContent='✅ Done'; btn.disabled=true;
+          btn.style.background='rgba(0,200,80,0.15)'; btn.style.color='#00e676';
+        } else {
+          btn.textContent='WATCH'; btn.disabled=false;
+        }
+      }
+      // Re-init for next use
+      if(window.Adsgram) _adsgramGem = window.Adsgram.init({ blockId: ADSGRAM_GEM_ID });
+    },
+    () => { // onError / skipped
+      if(btn){ btn.textContent='WATCH'; btn.disabled=false; }
     }
-  }, 2000);
+  );
+}
+
+// ── Revive after death ad (Game Over — Block 25283) ───────────────────
+function reviveWithAd(){
+  SFX.tap();
+  const btn = document.querySelector('.btn-revive');
+  if(btn){
+    btn.querySelector('.ab-icon').textContent='⏳';
+    btn.querySelector('.ab-label').textContent='LOADING';
+    btn.disabled=true;
+  }
+
+  // Re-init controller if needed
+  if(!_adsgramRevive && window.Adsgram){
+    _adsgramRevive = window.Adsgram.init({ blockId: ADSGRAM_REVIVE_ID });
+  }
+
+  _showAd(_adsgramRevive,
+    () => { // onReward — watched fully, revive player
+      if(btn){
+        btn.querySelector('.ab-icon').textContent='📺';
+        btn.querySelector('.ab-label').textContent='REVIVE';
+        btn.disabled=false;
+      }
+      hideGameOver();
+      G.revive();
+      SFX.gem();
+      TG.HapticFeedback.notificationOccurred('success');
+      toast('💚 Revived! Keep going!','#00e676');
+      // Re-init for next death
+      if(window.Adsgram) _adsgramRevive = window.Adsgram.init({ blockId: ADSGRAM_REVIVE_ID });
+    },
+    () => { // onError / skipped — no revive
+      if(btn){
+        btn.querySelector('.ab-icon').textContent='📺';
+        btn.querySelector('.ab-label').textContent='REVIVE';
+        btn.disabled=false;
+      }
+    }
+  );
 }
 
 function connectWallet(name){
@@ -1380,23 +1487,6 @@ function claimTask(type, btn){
   }
   SFX.gem();
   TG.HapticFeedback.notificationOccurred('success');
-}
-
-function reviveWithAd(){
-  SFX.tap();
-  const btn = document.querySelector('.btn-revive');
-  btn.querySelector('.ab-icon').textContent = '⏳';
-  btn.querySelector('.ab-label').textContent = 'LOADING';
-  btn.disabled = true;
-  setTimeout(()=>{
-    btn.querySelector('.ab-icon').textContent = '📺';
-    btn.querySelector('.ab-label').textContent = 'REVIVE';
-    btn.disabled = false;
-    hideGameOver();
-    G.revive();
-    SFX.gem();
-    toast('💚 Revived! Keep going!', '#00e676');
-  }, 1800);
 }
 
 function restartGame(){ SFX.tap(); hideGameOver(); G.restart(); }
