@@ -616,15 +616,20 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 <!-- TON Connect UI SDK (required: Telegram Apps Center) -->
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js" onload="window.__tcReady=true;if(window.__tcInit)window.__tcInit();"></script>
 <!-- Telegram Mini Apps Analytics SDK (required: Telegram Apps Center) -->
+<script
+    async
+    src="https://tganalytics.xyz/index.js"
+    onload="initAnalytics()"
+    type="text/javascript"
+></script>
 <script>
-function initAnalytics(){
-  window.telegramAnalytics.init({
-    token: 'eyJhcHBfbmFtZSI6InJvY2tldF9zdXJnZSIsImFwcF91cmwiOiJodHRwczovL3QubWUvUm9ja2V0U3VyZ2VfYm90IiwiYXBwX2RvbWFpbiI6Imh0dHBzOi8vcm9ja2V0LXN1cmdlLnZlcmNlbC5hcHAvIn0=!kQlTYZWzmhb8sHfQ9FD2CpNK+YrSKT00SHWG731Q7RQ=',
-    appName: 'rocket_surge',
-  });
-}
+    function initAnalytics() {
+      window.telegramAnalytics.init({
+        token: 'eyJhcHBfbmFtZSI6InJvY2tldF9zdXJnZSIsImFwcF91cmwiOiJodHRwczovL3QubWUvUm9ja2V0U3VyZ2VfYm90IiwiYXBwX2RvbWFpbiI6Imh0dHBzOi8vcm9ja2V0LXN1cmdlLnZlcmNlbC5hcHAvIn0=!kQlTYZWzmhb8sHfQ9FD2CpNK+YrSKT00SHWG731Q7RQ=',
+        appName: 'rocket_surge',
+      });
+    }
 </script>
-<script async src="https://tganalytics.xyz/index.js" onload="initAnalytics()" type="text/javascript"></script>
 </head>
 <body>
 <div id="wrap">
