@@ -45,14 +45,15 @@ body {
     0 30px 80px rgba(0,0,0,0.9),
     0 0 120px rgba(64,196,255,0.08);
 }
-canvas#gc { display: block; width: 360px; height: 640px; }
+canvas#gc { display: block; width: 360px; height: 640px; will-change: transform; image-rendering: crisp-edges; image-rendering: -webkit-optimize-contrast; }
 
 /* Tap layer: only active during gameplay. Hidden during menu/game-over so buttons work. */
 #tap-layer {
   position: absolute; inset: 0;
   z-index: 2;
   cursor: pointer;
-  display: none;   /* hidden by default — only shown when ST_PLAYING */
+  touch-action: none;
+  display: none;
 }
 #tap-layer.active { display: block; }
 
@@ -252,8 +253,18 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 }
 .nav-btn:active { transform:scale(0.91); }
 .nav-btn .nb-icon {
-  font-size:26px;
+  font-size:22px;
   line-height:1;
+}
+/* White circle behind icon — guarantees contrast on any button colour */
+.nb-icon-wrap {
+  width:38px; height:38px;
+  background:rgba(255,255,255,0.28);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; line-height:1;
+  flex-shrink:0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 3px rgba(0,0,0,0.2);
 }
 .nav-btn .nb-label {
   font-size:10px;
@@ -426,7 +437,7 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 /* ── TASK SHEET ── */
 #task-sheet {
   position: absolute; bottom: 0; left: 0; right: 0;
-  max-height: 88%; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  max-height: 88%; overflow-y: scroll; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain;
   background: linear-gradient(180deg, rgba(6,14,30,0.97) 0%, rgba(3,8,18,0.99) 100%);
   backdrop-filter: blur(30px); border-top: 1px solid rgba(255,255,255,0.1);
   border-radius: 26px 26px 0 0; padding: 0 0 28px; z-index: 300;
@@ -665,7 +676,7 @@ canvas#gc { display: block; width: 360px; height: 640px; }
       </div>
     </div>
 
-    <div class="tap-prompt" id="tap-prompt" onclick="G.tap()" style="cursor:pointer;">
+    <div class="tap-prompt" id="tap-prompt" onclick="G.tap()" style="cursor:pointer;margin-bottom:30px;">
       <div class="tap-ring">🚀</div>
       <div class="tap-label">Tap to fly</div>
     </div>
@@ -740,13 +751,13 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 
       <div class="sec-row">
         <button class="sec-btn sec-btn-tasks" onclick="openTasks()">
-          <span>📋</span> Earn Gems
+          <div class="nb-icon-wrap" style="width:28px;height:28px;font-size:16px;">📋</div> Earn Gems
         </button>
         <button class="sec-btn sec-btn-shop" onclick="openShop()">
-          <span>🛍️</span> Shop
+          <div class="nb-icon-wrap" style="width:28px;height:28px;font-size:16px;">🛒</div> Shop
         </button>
         <button class="sec-btn sec-btn-ranks" onclick="openLeaderboard()">
-          <span>🏆</span> Ranks
+          <div class="nb-icon-wrap" style="width:28px;height:28px;font-size:16px;">🥇</div> Ranks
         </button>
       </div>
     </div>
@@ -897,7 +908,7 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 
   <!-- ── SHOP MODAL ── -->
   <!-- ── SHOP SHEET (matches task sheet style) ── -->
-  <div id="shop-modal" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  <div id="shop-modal" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;
     background:linear-gradient(180deg,rgba(6,14,30,0.97) 0%,rgba(3,8,18,0.99) 100%);
     backdrop-filter:blur(30px);border-top:1px solid rgba(255,255,255,0.1);
     border-radius:26px 26px 0 0;padding:0 0 28px;z-index:400;
@@ -944,7 +955,7 @@ canvas#gc { display: block; width: 360px; height: 640px; }
   </div>
 
   <!-- ── SPARK / PRIZE POOL SHEET ── -->
-  <div id="spark-sheet" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  <div id="spark-sheet" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;
     background:linear-gradient(180deg,rgba(0,10,30,0.98),rgba(0,5,18,0.99));
     backdrop-filter:blur(30px);border-top:1px solid rgba(64,196,255,0.2);
     border-radius:26px 26px 0 0;padding:0 0 32px;z-index:350;
@@ -1062,7 +1073,7 @@ canvas#gc { display: block; width: 360px; height: 640px; }
   </div>
 
   <!-- ── HELP & SUPPORT SHEET ── -->
-  <div id="help-sheet" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow-y:auto;
+  <div id="help-sheet" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow-y:scroll;
     -webkit-overflow-scrolling:touch;
     background:linear-gradient(180deg,rgba(6,14,30,0.98),rgba(3,8,18,0.99));
     backdrop-filter:blur(30px);border-top:1px solid rgba(255,255,255,0.1);
@@ -1142,23 +1153,23 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 <div id="nav-layer">
   <div class="menu-bottom-nav" id="main-nav">
     <div class="nav-btn nb-tasks" onclick="openTasks()">
-      <span class="nb-icon">📋</span>
+      <div class="nb-icon-wrap">📋</div>
       <span class="nb-label">Tasks</span>
     </div>
     <div class="nav-btn nb-shop" onclick="openShop()">
-      <span class="nb-icon">🛍️</span>
+      <div class="nb-icon-wrap">🛒</div>
       <span class="nb-label">Shop</span>
     </div>
     <div class="nav-btn nb-invite" onclick="shareGame()">
-      <span class="nb-icon">🔗</span>
+      <div class="nb-icon-wrap">👥</div>
       <span class="nb-label">Invite</span>
     </div>
     <div class="nav-btn nb-ranks" onclick="openLeaderboard()">
-      <span class="nb-icon">🏆</span>
+      <div class="nb-icon-wrap">🥇</div>
       <span class="nb-label">Ranks</span>
     </div>
     <div class="nav-btn nb-help" onclick="openHelp()">
-      <span class="nb-icon">❓</span>
+      <div class="nb-icon-wrap">💡</div>
       <span class="nb-label">Help</span>
     </div>
   </div>
@@ -2179,26 +2190,30 @@ function showLeaderboardSheet(title, scores, myRank){
 
   const sheet = document.createElement('div');
   sheet.id='lb-sheet';
-  sheet.style.cssText=`position:absolute;bottom:0;left:0;right:0;max-height:88%;
-    overflow-y:auto;-webkit-overflow-scrolling:touch;
-    background:linear-gradient(180deg,rgba(6,14,30,0.97),rgba(3,8,18,0.99));
+  sheet.style.cssText=`position:absolute;bottom:0;left:0;right:0;max-height:90%;
+    display:flex;flex-direction:column;
+    background:linear-gradient(180deg,rgba(6,14,30,0.99),rgba(3,8,18,1));
     backdrop-filter:blur(30px);border-top:1px solid rgba(255,255,255,0.1);
-    border-radius:26px 26px 0 0;padding:0 0 28px;z-index:350;
+    border-radius:26px 26px 0 0;z-index:350;
     transform:translateY(100%);transition:transform 0.42s cubic-bezier(0.22,1,0.36,1);
     box-shadow:0 -30px 80px rgba(0,0,0,0.8);`;
   sheet.innerHTML=`
-    <div style="width:40px;height:4px;background:rgba(255,255,255,0.18);border-radius:2px;margin:14px auto 0;"></div>
-    <div style="padding:14px 18px 12px;display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">${title}</div>
-      <button onclick="closeLbSheet()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);
-        border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:15px;
-        cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;">✕</button>
+    <div style="flex-shrink:0;">
+      <div style="width:40px;height:4px;background:rgba(255,255,255,0.35);border-radius:2px;margin:14px auto 0;"></div>
+      <div style="padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">${title}</div>
+        <button onclick="closeLbSheet()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.15);
+          border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:15px;
+          cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;touch-action:manipulation;">✕</button>
+      </div>
+      ${myRank ? `<div style="margin:0 12px 10px;padding:10px 14px;background:rgba(255,210,0,0.1);border:1px solid rgba(255,210,0,0.25);border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="color:rgba(255,255,255,0.7);font-size:12px;font-weight:800;">YOUR RANK</span>
+        <span style="font-family:'Fredoka One',cursive;font-size:20px;color:#ffd200;">#${myRank}</span>
+      </div>` : ''}
     </div>
-    ${myRank ? `<div style="margin:0 12px 10px;padding:10px 14px;background:rgba(255,210,0,0.1);border:1px solid rgba(255,210,0,0.25);border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
-      <span style="color:rgba(255,255,255,0.7);font-size:12px;font-weight:800;">YOUR RANK</span>
-      <span style="font-family:'Fredoka One',cursive;font-size:20px;color:#ffd200;">#${myRank}</span>
-    </div>` : ''}
-    <div style="padding:0 12px;">${rows}</div>`;
+    <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 12px 28px;touch-action:pan-y;">
+      ${rows}
+    </div>`;
   document.getElementById('wrap').appendChild(sheet);
   // Animate in
   requestAnimationFrame(()=>requestAnimationFrame(()=>{ sheet.style.transform='translateY(0)'; }));
@@ -2747,7 +2762,15 @@ function restartGame(){ SFX.tap(); hideGameOver(); G.restart(); }
 
 // ─── CANVAS GAME ENGINE ─────────────────────────────────────────
 const canvas = document.getElementById('gc');
-const ctx    = canvas.getContext('2d');
+// DPR scaling — makes canvas sharp on retina/high-DPI screens
+const DPR = Math.min(window.devicePixelRatio || 1, 2); // cap at 2x for performance
+canvas.width  = 360 * DPR;
+canvas.height = 640 * DPR;
+canvas.style.width  = '360px';
+canvas.style.height = '640px';
+const ctx = canvas.getContext('2d', { alpha: false }); // alpha:false = faster compositing
+ctx.scale(DPR, DPR);
+ctx.imageSmoothingEnabled = false; // pixel-crisp rendering
 const W=360, H=640;
 
 const ST_MENU    = 0;
@@ -4078,7 +4101,7 @@ class GameEngine {
 
   loop(t){
     if(!this.running) return;
-    const dt=Math.min((t-this.lastT)/1000,0.05);
+    const dt=Math.min((t-this.lastT)/1000,0.033);
     this.lastT=t;
     this._dt=dt;
     this.update(dt); this.draw();
@@ -4348,8 +4371,9 @@ class GameEngine {
 
   // ── DRAW ──
   draw(){
-    ctx.save();
-    ctx.translate(this.shakeX,this.shakeY);
+    // Use setTransform to apply both DPR scale and shake offset in one call
+    // This avoids ctx.restore() wiping the DPR scale
+    ctx.setTransform(DPR, 0, 0, DPR, this.shakeX * DPR, this.shakeY * DPR);
 
     this.drawBg();
     this.drawStars();
@@ -4360,7 +4384,8 @@ class GameEngine {
     this.player.draw(ctx,this.state===ST_MENU || this.state===ST_REVIVE);
     this.drawScoreFloats(this._dt || 0.016);
 
-    ctx.restore();
+    // Reset to clean DPR scale (no shake) for overlay drawing
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
     // ── REVIVE COUNTDOWN OVERLAY ──
     if(this.state===ST_REVIVE){
@@ -4525,8 +4550,12 @@ const G = new GameEngine();
 // ── INPUT ──
 // Tap-layer is only visible during ST_PLAYING — it catches in-flight taps
 const tapLayer = document.getElementById('tap-layer');
-tapLayer.addEventListener('click', () => { if(G.state===ST_PLAYING) G.tap(); });
-tapLayer.addEventListener('touchstart', e=>{ e.preventDefault(); if(G.state===ST_PLAYING) G.tap(); }, {passive:false});
+// Use pointerdown — fires immediately on touch with zero 300ms delay
+// Single unified handler for mouse + touch + stylus
+tapLayer.addEventListener('pointerdown', e=>{
+  e.preventDefault();
+  if(G.state===ST_PLAYING) G.tap();
+}, {passive:false});
 // Keyboard spacebar
 document.addEventListener('keydown', e=>{
   if(e.code==='Space'){ e.preventDefault(); if(G.state===ST_PLAYING) G.tap(); }
@@ -4555,7 +4584,7 @@ function scaleGame(){
     nav.style.position      = 'fixed';
     nav.style.width         = '360px';
     nav.style.left          = left + 'px';
-    nav.style.top           = (top + scaledH - 82 * scale) + 'px';
+    nav.style.top           = (top + scaledH - 100 * scale) + 'px';
     nav.style.transformOrigin = 'top left';
     nav.style.transform     = `scale(${scale})`;
     nav.style.zIndex        = '100';
