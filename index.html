@@ -65,7 +65,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
   padding: 0 0 92px;
   pointer-events: none;
   transition: opacity 0.25s;
-  z-index: 10;
+  z-index: 30;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -74,7 +74,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 
 .menu-top {
   width: 100%; display: flex; justify-content: space-between;
-  align-items: center; padding: 12px 14px 0; gap: 6px;
+  align-items: center; padding: 10px 14px 0; gap: 6px;
 }
 
 .pill-btn {
@@ -104,17 +104,17 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
   color: rgba(64,196,255,0.8); text-transform: uppercase; margin-bottom: 4px;
 }
 .logo-title {
-  font-family: 'Fredoka One', cursive; font-size: 58px; line-height: 0.95;
+  font-family: 'Fredoka One', cursive; font-size: 52px; line-height: 0.9;
   background: linear-gradient(170deg, #ffffff 0%, #ffd200 38%, #ff6a00 70%, #ff2244 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   filter: drop-shadow(0 6px 24px rgba(255,180,0,0.45));
   letter-spacing: 2px;
 }
 .logo-sub {
-  font-family: 'Fredoka One', cursive; font-size: 17px;
+  font-family: 'Fredoka One', cursive; font-size: 15px;
   background: linear-gradient(90deg, #40c4ff, #b44bff);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  letter-spacing: 6px; margin-top: 2px;
+  letter-spacing: 5px; margin-top: 1px;
   filter: drop-shadow(0 0 12px rgba(64,196,255,0.5));
 }
 
@@ -126,8 +126,8 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
   backdrop-filter: blur(30px);
   border: 1px solid rgba(255,210,0,0.35);
   border-radius: 22px;
-  padding: 12px 16px 12px 12px;
-  margin-top: 10px;
+  padding: 9px 14px 9px 10px;
+  margin-top: 6px;
   width: calc(100% - 32px);
   box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,180,0,0.08), inset 0 1px 0 rgba(255,210,0,0.15);
 }
@@ -144,10 +144,10 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 }
 .mb-avatar-wrap {
   position:relative; flex-shrink:0;
-  width:48px; height:48px;
+  width:42px; height:42px;
 }
 .mb-avatar-inner {
-  width:48px; height:48px; border-radius:50%;
+  width:42px; height:42px; border-radius:50%;
   border: 2px solid rgba(255,210,0,0.5);
   box-shadow: 0 0 16px rgba(255,180,0,0.35), 0 0 0 3px rgba(255,180,0,0.08);
   overflow:hidden; display:flex; align-items:center; justify-content:center;
@@ -161,9 +161,9 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 }
 .mb-info { flex:1; min-width:0; }
 .mb-name {
-  font-size:14px; font-weight:900; color:#fff;
+  font-size:13px; font-weight:900; color:#fff;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  line-height:1.2; margin-bottom:4px;
+  line-height:1.2; margin-bottom:3px;
   text-shadow: 0 1px 4px rgba(0,0,0,0.5);
 }
 .mb-stats { display:flex; align-items:center; gap:10px; }
@@ -171,7 +171,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
   display:flex; flex-direction:column; align-items:flex-start;
 }
 .mb-stat-val {
-  font-family:'Fredoka One',cursive; font-size:20px; color:var(--accent2);
+  font-family:'Fredoka One',cursive; font-size:18px; color:var(--accent2);
   line-height:1; filter:drop-shadow(0 1px 6px rgba(255,180,0,0.4));
 }
 .mb-stat-val.sparks { color:#40c4ff; filter:drop-shadow(0 1px 6px rgba(64,196,255,0.4)); }
@@ -201,9 +201,9 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 .tap-prompt { display:flex; flex-direction:column; align-items:center; gap:4px; }
 @keyframes tapBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
 .tap-ring {
-  width: 56px; height: 56px; border-radius: 50%;
+  width: 52px; height: 52px; border-radius: 50%;
   background: linear-gradient(135deg, #ff6a00, #ffd200);
-  display: flex; align-items: center; justify-content: center; font-size: 22px;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
   animation: tapBob 1.3s ease-in-out infinite;
   box-shadow: 0 8px 30px rgba(255,106,0,0.5), 0 0 0 0 rgba(255,106,0,0.4);
   animation: tapBob 1.3s ease-in-out infinite, tapPulse 1.3s ease-in-out infinite;
@@ -218,7 +218,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 /* ── NAV LAYER — completely outside canvas ── */
 #nav-layer {
   position: fixed;
-  z-index: 100;
+  z-index: 50;
   pointer-events: none;
   display: none;
   width: 360px;
@@ -258,13 +258,12 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 }
 /* White circle behind icon — guarantees contrast on any button colour */
 .nb-icon-wrap {
-  width:38px; height:38px;
-  background:rgba(255,255,255,0.28);
+  width:34px; height:34px;
+  background:rgba(255,255,255,0.22);
   border-radius:50%;
   display:flex; align-items:center; justify-content:center;
-  font-size:20px; line-height:1;
+  font-size:18px; line-height:1;
   flex-shrink:0;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 3px rgba(0,0,0,0.2);
 }
 .nav-btn .nb-label {
   font-size:10px;
@@ -328,11 +327,12 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 /* ── GAME OVER ── */
 #go-panel {
   position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-  padding-bottom: 28px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 500;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 0; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 200;
 }
 #go-panel.show { opacity:1; pointer-events:all; }
-.go-backdrop { position:absolute; inset:0; background: linear-gradient(180deg, transparent 15%, rgba(5,10,40,0.80) 50%, rgba(5,10,40,0.97) 68%, rgba(5,10,40,1) 100%); pointer-events:none; }
+.go-backdrop { position:absolute; inset:0; background: linear-gradient(180deg, transparent 15%, rgba(5,10,40,0.80) 50%, rgba(5,10,40,0.97) 68%, rgba(5,10,40,1) 100%); pointer-events:none; z-index:0; }
+.go-card { position:relative; z-index:2; }
 .go-card {
   position: relative; width: 100%; padding: 0 12px 6px;
   transform: translateY(50px); opacity: 0;
@@ -341,9 +341,9 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 #go-panel.show .go-card { transform: translateY(0); opacity: 1; }
 
 /* Crash banner */
-.crash-banner { text-align: center; margin-bottom: 10px; }
+.crash-banner { text-align: center; margin-bottom: 7px; }
 .crash-title {
-  font-family: 'Fredoka One', cursive; font-size: 34px;
+  font-family: 'Fredoka One', cursive; font-size: 28px;
   color: #fff; text-shadow: 0 3px 0 rgba(200,0,40,0.8), 0 0 30px rgba(255,30,60,0.5);
   line-height: 1; white-space: nowrap;
 }
@@ -362,35 +362,35 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 .result-card {
   background: linear-gradient(145deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
   backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.25);
-  border-radius: var(--r-xl); padding: 14px 18px; margin-bottom: 8px;
+  border-radius: var(--r-xl); padding: 11px 14px; margin-bottom: 7px;
   display: flex; align-items: center; gap: 16px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12);
 }
 .medal-col { display:flex; flex-direction:column; align-items:center; gap:2px; min-width:62px; }
-.medal-emoji { font-size: 46px; line-height:1; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
+.medal-emoji { font-size: 38px; line-height:1; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
 .medal-name { font-size:9px; font-weight:900; color:var(--sub); letter-spacing:2px; text-transform:uppercase; }
 .divider-v { width:1px; height:52px; background: linear-gradient(180deg, transparent, rgba(255,255,255,0.2), transparent); }
 .scores-col { flex:1; display:flex; flex-direction:column; gap:8px; }
 .score-row { display:flex; justify-content:space-between; align-items:center; }
 .sl { font-size: 10px; font-weight: 900; color: var(--sub); letter-spacing: 1.5px; text-transform: uppercase; }
-.sv { font-family: 'Fredoka One',cursive; font-size: 30px; color: #fff; line-height: 1; }
+.sv { font-family: 'Fredoka One',cursive; font-size: 26px; color: #fff; line-height: 1; }
 .sv.new { color: var(--accent2); animation: newBest 0.5s ease-out 0.7s both; }
 @keyframes newBest { 0%{transform:scale(1)} 50%{transform:scale(1.28)} 100%{transform:scale(1)} }
 
 .gem-row {
   background: linear-gradient(135deg, rgba(255,210,0,0.18), rgba(255,150,0,0.12));
   border: 1px solid rgba(255,210,0,0.4); border-radius: var(--r-md);
-  padding: 9px 14px; display:flex; justify-content:space-between; align-items:center;
-  margin-bottom: 9px;
+  padding: 7px 12px; display:flex; justify-content:space-between; align-items:center;
+  margin-bottom: 7px;
   box-shadow: 0 2px 12px rgba(255,180,0,0.1);
 }
 .gr-label { font-size:10px; font-weight:900; color:rgba(255,210,0,0.75); letter-spacing:1px; text-transform:uppercase; }
 .gr-val { font-family:'Fredoka One',cursive; font-size:20px; color:var(--accent2); }
 
 /* Action buttons */
-.action-row { display:flex; gap:8px; margin-bottom:8px; }
+.action-row { display:flex; gap:7px; margin-bottom:7px; }
 .act-btn {
-  flex:1; border:none; border-radius:var(--r-md); padding:15px 8px; min-height:54px;
+  flex:1; border:none; border-radius:var(--r-md); padding:12px 8px; min-height:48px;
   display:flex; flex-direction:column; align-items:center; gap:3px;
   cursor:pointer; transition: transform 0.12s;
   font-family:'Nunito',sans-serif;
@@ -421,8 +421,8 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 .sec-btn {
   flex:1;
   border:none;
-  border-radius: var(--r-sm); padding: 13px 6px;
-  min-height: 48px;
+  border-radius: var(--r-sm); padding: 11px 6px;
+  min-height: 44px;
   display:flex; align-items:center; justify-content:center; gap:6px;
   cursor:pointer; transition: transform 0.12s; color:#fff;
   font-family:'Nunito',sans-serif; font-weight:900; font-size:12px;
@@ -437,10 +437,10 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 /* ── TASK SHEET ── */
 #task-sheet {
   position: absolute; bottom: 0; left: 0; right: 0;
-  max-height: 88%; overflow-y: scroll; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain;
+  max-height: 88%; overflow-y: scroll; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; padding-bottom: 110px;
   background: linear-gradient(180deg, rgba(6,14,30,0.97) 0%, rgba(3,8,18,0.99) 100%);
   backdrop-filter: blur(30px); border-top: 1px solid rgba(255,255,255,0.1);
-  border-radius: 26px 26px 0 0; padding: 0 0 28px; z-index: 300;
+  border-radius: 26px 26px 0 0; padding: 0 0 100px; z-index: 500;
   transform: translateY(100%); transition: transform 0.42s cubic-bezier(0.22,1,0.36,1);
   box-shadow: 0 -30px 80px rgba(0,0,0,0.8); will-change: transform;
 }
@@ -481,17 +481,19 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
   background: rgba(0,230,118,0.12); color:var(--green);
   border: 1px solid rgba(0,230,118,0.3); box-shadow: none;
 }
+.task-do.check { background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; animation:pulse-check 1.5s ease-in-out infinite; }
+@keyframes pulse-check { 0%,100%{box-shadow:0 0 0 0 rgba(14,165,233,0.4)} 50%{box-shadow:0 0 0 6px rgba(14,165,233,0)} }
 
 /* ── WALLET ── */
 #wallet-modal {
   position:absolute; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px);
-  z-index:400; display:flex; align-items:flex-end; pointer-events:none; opacity:0; transition:opacity 0.2s;
+  z-index:500; display:flex; align-items:flex-end; pointer-events:none; opacity:0; transition:opacity 0.2s;
 }
 #wallet-modal.show { pointer-events:all; opacity:1; }
 .wallet-sheet {
   width:100%; background:linear-gradient(180deg,rgba(8,16,36,0.98),rgba(3,8,18,0.99));
   border:1px solid rgba(255,255,255,0.1); border-bottom:none;
-  border-radius:26px 26px 0 0; padding:0 0 32px;
+  border-radius:26px 26px 0 0; padding:0 0 100px;
   transform:translateY(20px); transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);
   box-shadow: 0 -20px 60px rgba(0,0,0,0.7);
 }
@@ -527,7 +529,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
   background:rgba(0,0,0,0.85); backdrop-filter:blur(20px);
   border:1px solid rgba(255,255,255,0.15); border-radius:50px;
   padding:9px 22px; color:#fff; font-size:13px; font-weight:800;
-  white-space:nowrap; z-index:500; opacity:0;
+  white-space:nowrap; z-index:800; opacity:0;
   transition:opacity 0.2s, transform 0.2s; pointer-events:none;
   box-shadow: 0 6px 24px rgba(0,0,0,0.5);
 }
@@ -632,13 +634,13 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
     </div>
 
     <!-- Prize pool banner -->
-    <div id="prize-banner" style="margin-top:5px;padding:5px 14px;background:linear-gradient(135deg,rgba(64,196,255,0.12),rgba(100,80,255,0.08));border:1px solid rgba(64,196,255,0.2);border-radius:50px;display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="openSparkSheet()">
+    <div id="prize-banner" style="margin-top:4px;padding:4px 12px;background:linear-gradient(135deg,rgba(64,196,255,0.12),rgba(100,80,255,0.08));border:1px solid rgba(64,196,255,0.2);border-radius:50px;display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="openSparkSheet()">
       <span style="font-size:13px;">🏆</span>
       <span style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase;">This week's pool</span>
       <span id="prize-pool-val" style="font-family:'Fredoka One',cursive;font-size:16px;color:#40c4ff;margin-left:2px;">…</span>
     </div>
 
-    <div class="logo-block" style="margin-top:4px;">
+    <div class="logo-block" style="margin-top:0px;">
       <div class="logo-eyebrow">⚡ Telegram Mini Game</div>
       <div class="logo-title">ROCKET</div>
       <div class="logo-sub">S U R G E</div>
@@ -676,7 +678,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
       </div>
     </div>
 
-    <div class="tap-prompt" id="tap-prompt" onclick="G.tap()" style="cursor:pointer;margin-bottom:30px;">
+    <div class="tap-prompt" id="tap-prompt" onclick="G.tap()" style="cursor:pointer;margin-bottom:20px;">
       <div class="tap-ring">🚀</div>
       <div class="tap-label">Tap to fly</div>
     </div>
@@ -813,7 +815,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
           <div class="task-name">Join Telegram Channel</div>
           <div class="task-rew">+50 💎 Gems</div>
         </div>
-        <button class="task-do" onclick="claimTask('channel',this)">GO →</button>
+        <button class="task-do" id="task-btn-channel" onclick="claimTask('channel',this)">JOIN</button>
       </div>
 
       <div class="task-card">
@@ -822,7 +824,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
           <div class="task-name">Share Your Score</div>
           <div class="task-rew">+50 💎 Gems</div>
         </div>
-        <button class="task-do" onclick="claimTask('share',this)">GO →</button>
+        <button class="task-do" id="task-btn-share" onclick="claimTask('share',this)">SHARE</button>
       </div>
 
       <!-- INVITE section -->
@@ -853,7 +855,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
           <div class="task-name">Invite 1 Friend</div>
           <div class="task-rew">+100 💎 per friend invited</div>
         </div>
-        <button class="task-do" onclick="claimTask('invite',this)">INVITE</button>
+        <button class="task-do" id="task-btn-invite" onclick="claimTask('invite',this)">INVITE</button>
       </div>
 
       <div class="task-card">
@@ -908,10 +910,10 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 
   <!-- ── SHOP MODAL ── -->
   <!-- ── SHOP SHEET (matches task sheet style) ── -->
-  <div id="shop-modal" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;
-    background:linear-gradient(180deg,rgba(6,14,30,0.97) 0%,rgba(3,8,18,0.99) 100%);
+  <div id="shop-modal" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;z-index:400;
+    background:linear-gradient(180deg,rgba(6,14,30,0.99) 0%,rgba(3,8,18,0.99) 100%);
     backdrop-filter:blur(30px);border-top:1px solid rgba(255,255,255,0.1);
-    border-radius:26px 26px 0 0;padding:0 0 28px;z-index:400;
+    border-radius:26px 26px 0 0;padding:0 0 100px;z-index:500;
     transform:translateY(100%);transition:transform 0.42s cubic-bezier(0.22,1,0.36,1);
     box-shadow:0 -30px 80px rgba(0,0,0,0.8);will-change:transform;pointer-events:all;">
 
@@ -955,20 +957,25 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
   </div>
 
   <!-- ── SPARK / PRIZE POOL SHEET ── -->
-  <div id="spark-sheet" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;
+  <div id="spark-sheet" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;
+    display:flex;flex-direction:column;
     background:linear-gradient(180deg,rgba(0,10,30,0.98),rgba(0,5,18,0.99));
     backdrop-filter:blur(30px);border-top:1px solid rgba(64,196,255,0.2);
-    border-radius:26px 26px 0 0;padding:0 0 32px;z-index:350;
+    border-radius:26px 26px 0 0;z-index:500;
     transform:translateY(100%);transition:transform 0.42s cubic-bezier(0.22,1,0.36,1);
     box-shadow:0 -30px 80px rgba(0,0,0,0.9);will-change:transform;">
 
-    <div style="width:40px;height:4px;background:rgba(255,255,255,0.18);border-radius:2px;margin:14px auto 0;"></div>
-
-    <!-- Header -->
-    <div style="padding:14px 18px 0;display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">⚡ Sparks & Prizes</div>
-      <button onclick="closeSparkSheet()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;">✕</button>
+    <!-- Fixed header -->
+    <div style="flex-shrink:0;">
+      <div style="width:40px;height:4px;background:rgba(255,255,255,0.35);border-radius:2px;margin:14px auto 0;"></div>
+      <div style="padding:14px 18px 0;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">⚡ Sparks & Prizes</div>
+        <button onclick="closeSparkSheet()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;touch-action:manipulation;">✕</button>
+      </div>
     </div>
+
+    <!-- Scrollable content -->
+    <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;padding-bottom:110px;">
 
     <!-- Your stats -->
     <div style="margin:14px 12px 0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
@@ -1070,26 +1077,27 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
       </div>
     </div>
 
-  </div>
+  </div><!-- end scrollable content -->
+  </div><!-- end spark-sheet -->
 
   <!-- ── HELP & SUPPORT SHEET ── -->
-  <div id="help-sheet" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow-y:scroll;
-    -webkit-overflow-scrolling:touch;
+  <div id="help-sheet" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;
+    display:flex;flex-direction:column;z-index:500;
     background:linear-gradient(180deg,rgba(6,14,30,0.98),rgba(3,8,18,0.99));
     backdrop-filter:blur(30px);border-top:1px solid rgba(255,255,255,0.1);
-    border-radius:26px 26px 0 0;padding:0 0 32px;z-index:350;
+    border-radius:26px 26px 0 0;
     transform:translateY(100%);transition:transform 0.42s cubic-bezier(0.22,1,0.36,1);
     box-shadow:0 -30px 80px rgba(0,0,0,0.8);will-change:transform;">
 
-    <div style="width:40px;height:4px;background:rgba(255,255,255,0.18);border-radius:2px;margin:14px auto 0;"></div>
-
-    <!-- Header -->
-    <div style="padding:14px 18px 12px;display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">❓ Help & Support</div>
-      <button onclick="closeHelp()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;">✕</button>
+    <div style="flex-shrink:0;">
+      <div style="width:40px;height:4px;background:rgba(255,255,255,0.35);border-radius:2px;margin:14px auto 0;"></div>
+      <div style="padding:14px 18px 12px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">❓ Help & Support</div>
+        <button onclick="closeHelp()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;touch-action:manipulation;">✕</button>
+      </div>
     </div>
 
-    <div style="padding:0 14px;display:flex;flex-direction:column;gap:8px;">
+    <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;padding:0 14px 110px;display:flex;flex-direction:column;gap:8px;">
 
       <!-- Contact section header -->
       <div style="color:rgba(255,255,255,0.4);font-size:10px;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:2px 2px 4px;">📞 Contact Us</div>
@@ -1783,13 +1791,43 @@ function toast(msg, color='#fff'){
 }
 
 // ─── UI Panels ───────────────────────────────────────────────────
-function openTasks()  { SFX.tap(); document.getElementById('task-sheet').classList.add('up'); }
+// Enable touch scrolling on a sheet — overrides touch-action:none on body
+function _enableSheetScroll(id){
+  const el = document.getElementById(id);
+  if(!el || el._scrollFixed) return;
+  el._scrollFixed = true;
+  const stop = e => e.stopPropagation();
+  el.addEventListener('touchstart', stop, {passive:true});
+  el.addEventListener('touchmove',  stop, {passive:true});
+  el.addEventListener('touchend',   stop, {passive:true});
+}
+
+// ── Close every sheet/modal before opening a new one ─────────────────
+function closeAllSheets(instant=false){
+  const sheets = [
+    document.getElementById('task-sheet'),
+    document.getElementById('shop-modal'),
+    document.getElementById('spark-sheet'),
+    document.getElementById('help-sheet'),
+  ];
+  sheets.forEach(el=>{
+    if(!el) return;
+    if(instant) el.style.transition='none';
+    if(el.id==='task-sheet') el.classList.remove('up');
+    else el.style.transform='translateY(100%)';
+    if(instant) setTimeout(()=>{ el.style.transition=''; },50);
+  });
+  document.getElementById('wallet-modal').classList.remove('show');
+  document.getElementById('lb-sheet')?.remove();
+  clearInterval(_poolTimerInterval);
+}
+
+function openTasks()  { SFX.tap(); closeAllSheets(); _enableSheetScroll('task-sheet'); document.getElementById('task-sheet').classList.add('up'); }
 function closeTasks() { SFX.tap(); document.getElementById('task-sheet').classList.remove('up'); }
-function openWallet() { SFX.tap(); document.getElementById('wallet-modal').classList.add('show'); }
+function openWallet() { SFX.tap(); closeAllSheets(); _enableSheetScroll('wallet-modal'); document.getElementById('wallet-modal').classList.add('show'); }
 function closeWallet(){ SFX.tap(); document.getElementById('wallet-modal').classList.remove('show'); }
 function showGameOver(){
   document.getElementById('go-panel').classList.add('show');
-  document.getElementById('nav-layer').classList.remove('visible');
   document.getElementById('nav-layer').classList.remove('visible');
   document.getElementById('score-hud').classList.remove('show');
 }
@@ -1921,13 +1959,14 @@ async function _fetchMenuRank(){
   }catch(e){}
 }
 async function openSparkSheet(){
-  SFX.tap();
+  SFX.tap(); closeAllSheets();
   updateSparkUI();
   document.getElementById('streak-val').textContent = streakDays;
   if(tonWallet){
     document.getElementById('wallet-input').value = tonWallet;
     _updateWalletUI(true);
   }
+  _enableSheetScroll('spark-sheet');
   document.getElementById('spark-sheet').style.transform='translateY(0)';
   _startPoolTimer();
   await _fetchSparkLeaderboard();
@@ -1974,7 +2013,7 @@ async function _fetchSparkLeaderboard(){
   try{
     const uid  = getTGUserId();
     const sw=await _getServerWeek();
-    const resp = await fetch(`${LEADERBOARD_URL}/sparks?user_id=${uid}&limit=10&week=${sw}`);
+    const resp = await fetch(`${LEADERBOARD_URL}/sparks?user_id=${uid}&limit=50&week=${sw}`);
     if(!resp.ok) throw new Error('fetch failed');
     const { sparks, rank, pool_ton, pool_stars } = await resp.json();
 
@@ -2065,7 +2104,8 @@ const FAQ_ITEMS = [
 ];
 
 function openHelp(){
-  SFX.tap();
+  SFX.tap(); closeAllSheets();
+  _enableSheetScroll('help-sheet');
   const list = document.getElementById('faq-list');
   if(list && list.children.length===0){
     list.innerHTML = FAQ_ITEMS.map((item,i)=>`
@@ -2127,13 +2167,12 @@ async function submitScore(score){
 }
 
 async function openLeaderboard(){
-  SFX.tap();
-  // Show loading sheet
+  SFX.tap(); closeAllSheets();
   showLeaderboardSheet('⏳ Loading…', []);
 
   try{
     const uid = getTGUserId();
-    const resp = await fetch(`${LEADERBOARD_URL}/scores?user_id=${uid}&limit=15`);
+    const resp = await fetch(`${LEADERBOARD_URL}/scores?user_id=${uid}&limit=50`);
     if(!resp.ok) throw new Error('fetch failed');
     const { scores, rank } = await resp.json();
     showLeaderboardSheet(`🏆 Top Players`, scores, rank);
@@ -2143,20 +2182,19 @@ async function openLeaderboard(){
 }
 
 function showLeaderboardSheet(title, scores, myRank){
-  // Remove any existing leaderboard sheet
   document.getElementById('lb-sheet')?.remove();
 
-  const medals = ['🥇','🥈','🥉'];
-  const myUid  = String(getTGUserId());
+  const myUid = String(getTGUserId());
+  const myEntry = scores ? scores.find(s=>String(s.user_id)===myUid) : null;
 
   let rows = '';
   if(!scores){
-    rows = `<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.5);font-size:13px;">
-      Deploy the Cloudflare Worker to enable the real leaderboard.
+    rows = `<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.5);font-size:14px;">
+      Connect to the server to see the leaderboard.
     </div>`;
   } else if(scores.length===0){
-    rows = `<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.5);font-size:13px;">
-      No scores yet. Be the first! 🚀
+    rows = `<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.5);font-size:14px;">
+      No scores yet — be the first! 🚀
     </div>`;
   } else {
     rows = scores.map((s,i)=>{
@@ -2164,58 +2202,88 @@ function showLeaderboardSheet(title, scores, myRank){
       const medal  = ['🥇','🥈','🥉'][i] || '';
       const rankNum= i+1;
       const bg     = isMe
-        ? 'background:rgba(255,210,0,0.12);border:1px solid rgba(255,210,0,0.35);'
+        ? 'background:rgba(255,210,0,0.15);border:1px solid rgba(255,210,0,0.4);'
+        : i < 3
+        ? 'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);'
         : 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);';
-      const avatar = _playerAvatar(s.name, s.user_id, s.photo_url||'', 38);
-      const sub    = s.username ? `<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">@${escHtml(s.username)}</div>` : '';
-      const rankBadge = medal
-        ? `<div style="font-size:20px;width:28px;text-align:center;flex-shrink:0;">${medal}</div>`
-        : `<div style="width:28px;text-align:center;flex-shrink:0;font-size:12px;font-weight:800;color:rgba(255,255,255,0.35);">${rankNum}</div>`;
-      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;${bg}border-radius:14px;margin-bottom:6px;">
-        ${rankBadge}
+      const avatar   = _playerAvatar(s.name, s.user_id, s.photo_url||'', 40);
+      const username = s.username ? `<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">@${escHtml(s.username)}</div>` : '';
+      const rankEl   = medal
+        ? `<div style="font-size:22px;width:32px;text-align:center;flex-shrink:0;">${medal}</div>`
+        : `<div style="width:32px;text-align:center;flex-shrink:0;font-size:13px;font-weight:900;color:${isMe?'#ffd200':'rgba(255,255,255,0.4)'};">${rankNum}</div>`;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;${bg}border-radius:14px;margin-bottom:6px;transition:opacity 0.1s;">
+        ${rankEl}
         ${avatar}
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:800;color:${isMe?'#ffd200':'#fff'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.name)}${isMe?' <span style="font-size:10px;color:#ffd200;font-weight:700;">(you)</span>':''}</div>
-          ${sub}
+          <div style="font-size:13px;font-weight:800;color:${isMe?'#ffd200':'#fff'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            ${escHtml(s.name)}${isMe?'<span style="font-size:10px;color:#ffd200;font-weight:700;margin-left:5px;">(you)</span>':''}
+          </div>
+          ${username}
         </div>
-        <div style="font-family:'Fredoka One',cursive;font-size:20px;color:${isMe?'#ffd200':'rgba(255,255,255,0.85)'};flex-shrink:0;">${s.score}</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:22px;color:${isMe?'#ffd200':i<3?'#fff':'rgba(255,255,255,0.75)'};flex-shrink:0;">${s.score}</div>
       </div>`;
     }).join('');
-    if(myRank && myRank > scores.length){
-      rows += `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.4);padding:6px 0;">
-        Your rank: #${myRank}
-      </div>`;
-    }
   }
 
-  const sheet = document.createElement('div');
-  sheet.id='lb-sheet';
-  sheet.style.cssText=`position:absolute;bottom:0;left:0;right:0;max-height:90%;
-    display:flex;flex-direction:column;
-    background:linear-gradient(180deg,rgba(6,14,30,0.99),rgba(3,8,18,1));
-    backdrop-filter:blur(30px);border-top:1px solid rgba(255,255,255,0.1);
-    border-radius:26px 26px 0 0;z-index:350;
-    transform:translateY(100%);transition:transform 0.42s cubic-bezier(0.22,1,0.36,1);
-    box-shadow:0 -30px 80px rgba(0,0,0,0.8);`;
-  sheet.innerHTML=`
-    <div style="flex-shrink:0;">
-      <div style="width:40px;height:4px;background:rgba(255,255,255,0.35);border-radius:2px;margin:14px auto 0;"></div>
-      <div style="padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">${title}</div>
-        <button onclick="closeLbSheet()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.15);
-          border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:15px;
-          cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;touch-action:manipulation;">✕</button>
+  // Your rank sticky bar (shown if you're not in top 50)
+  const myRankBar = (myRank && myRank > (scores?.length||0) && myEntry) ? `
+    <div style="flex-shrink:0;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.1);background:rgba(255,210,0,0.08);">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,210,0,0.15);border:1px solid rgba(255,210,0,0.4);border-radius:14px;">
+        <div style="width:32px;text-align:center;flex-shrink:0;font-size:13px;font-weight:900;color:#ffd200;">${myRank}</div>
+        ${_playerAvatar(myEntry.name, myEntry.user_id, myEntry.photo_url||'', 40)}
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:800;color:#ffd200;">You</div>
+          <div style="font-size:11px;color:rgba(255,210,0,0.6);">Your position</div>
+        </div>
+        <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#ffd200;">${myEntry.score}</div>
       </div>
-      ${myRank ? `<div style="margin:0 12px 10px;padding:10px 14px;background:rgba(255,210,0,0.1);border:1px solid rgba(255,210,0,0.25);border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
+    </div>` : '';
+
+  const playerCount = scores?.length ? `<span style="font-size:13px;color:rgba(255,255,255,0.4);font-weight:700;">${scores.length} players</span>` : '';
+
+  const sheet = document.createElement('div');
+  sheet.id = 'lb-sheet';
+  const wrap  = document.getElementById('wrap');
+  const wRect = wrap.getBoundingClientRect();
+  sheet.style.cssText = `position:fixed;bottom:0;left:${wRect.left}px;width:${wRect.width}px;
+    max-height:92%;display:flex;flex-direction:column;
+    background:linear-gradient(180deg,rgba(6,14,30,0.99),rgba(3,8,18,1));
+    backdrop-filter:blur(30px);border-top:1px solid rgba(255,255,255,0.12);
+    border-radius:26px 26px 0 0;z-index:600;
+    transform:translateY(100%);transition:transform 0.42s cubic-bezier(0.22,1,0.36,1);
+    box-shadow:0 -30px 80px rgba(0,0,0,0.9);`;
+
+  sheet.innerHTML = `
+    <!-- Fixed header -->
+    <div style="flex-shrink:0;">
+      <div style="width:40px;height:4px;background:rgba(255,255,255,0.35);border-radius:2px;margin:12px auto 0;"></div>
+      <div style="padding:12px 16px 10px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">${title}</div>
+          ${playerCount}
+        </div>
+        <button onclick="closeLbSheet()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.15);
+          border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:16px;
+          cursor:pointer;display:flex;align-items:center;justify-content:center;
+          font-family:'Nunito',sans-serif;touch-action:manipulation;flex-shrink:0;">✕</button>
+      </div>
+      ${myRank && myRank <= (scores?.length||0) ? `<div style="margin:0 12px 8px;padding:9px 14px;background:rgba(255,210,0,0.1);border:1px solid rgba(255,210,0,0.25);border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
         <span style="color:rgba(255,255,255,0.7);font-size:12px;font-weight:800;">YOUR RANK</span>
         <span style="font-family:'Fredoka One',cursive;font-size:20px;color:#ffd200;">#${myRank}</span>
       </div>` : ''}
+      <div style="height:1px;background:rgba(255,255,255,0.08);margin:0 12px;"></div>
     </div>
-    <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 12px 28px;touch-action:pan-y;">
+
+    <!-- Scrollable rows -->
+    <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+      padding:10px 12px 20px;touch-action:pan-y;">
       ${rows}
-    </div>`;
-  document.getElementById('wrap').appendChild(sheet);
-  // Animate in
+    </div>
+
+    <!-- Your rank sticky at bottom if not in list -->
+    ${myRankBar}`;
+
+  document.body.appendChild(sheet);
   requestAnimationFrame(()=>requestAnimationFrame(()=>{ sheet.style.transform='translateY(0)'; }));
 }
 
@@ -2226,50 +2294,49 @@ function closeLbSheet(){
 
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// ─── TASK TIMING RULES (industry standard like Hamster Kombat / Notcoin) ──
-// One-time forever : channel, share, invite5, invite10
-// Per-invite       : invite — 100💎 each time, unlimited, but only after returning
-// Daily reset      : play5, watch_ad — resets at midnight
-// ─────────────────────────────────────────────────────────────────────────
+// ─── TASK SYSTEM (two-step VERIFY model like Hamster Kombat / Blum) ──────
+// Step 1: User taps GO/JOIN/SHARE/INVITE → Telegram opens → button → CHECK ✓
+// Step 2: User returns → taps CHECK ✓ → gems awarded (channel: bot verifies)
+// This is 100% reliable — no dependency on onEvent('activated') which is flaky.
+// ─────────────────────────────────────────────────────────────────────────────
 
-// Track whether we're waiting for user to return after a social action
-let _pendingReward = null;  // { type, btn, gems, label }
-
-// Called when user returns to the Mini App after leaving (e.g. after sharing)
-function _onAppActivated(){
-  if(!_pendingReward) return;
-  const { type, btn, gems, label, taskKey, onExtra } = _pendingReward;
-  _pendingReward = null;
-
-  if(taskKey && _claimedTasks.has(taskKey)) return;
-  if(taskKey) _claimedTasks.add(taskKey);
-  gemCount += gems;
-  updateGemUI(); saveData();
-  toast(`+${gems} 💎 ${label}`,'#ffd200'); SFX.gem();
-  TG.HapticFeedback.notificationOccurred('success');
-  if(btn && btn.tagName){ btn.textContent='✅ Done'; btn.classList.add('done'); btn.disabled=true; }
-  if(onExtra) onExtra();
+function _setBtnState(id, state, text){
+  const btn = id ? document.getElementById(id) : null;
+  if(!btn) return;
+  btn.disabled = (state==='loading'||state==='done');
+  btn.className = 'task-do'+(state==='done'?' done':state==='check'?' check':'');
+  btn.textContent = text;
 }
 
-// Register Telegram's activated event (fires when user returns to Mini App)
-try{
-  TG.onEvent && TG.onEvent('activated', _onAppActivated);
-}catch(e){}
-
-function shareGame(){
-  SFX.tap();
-  const uid  = getTGUserId();
-  const name = getTGUserName();
-  const link = `https://t.me/${BOT_USERNAME}?start=ref_${uid}`;
-  const msg  = `🚀 ${name} scored ${highScore} in Rocket Surge!\nCan you beat me? 👇\n${link}`;
+async function verifyChannelJoin(){
+  const taskKey = 'channel';
+  if(_claimedTasks.has(taskKey)){ toast('Already claimed!','#ff8c00'); return; }
+  _setBtnState('task-btn-channel','loading','⏳');
   try{
-    TG.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(msg)}`);
-    // Only queue reward if not already claimed
-    if(!_claimedTasks.has('share')){
-      _pendingReward = { type:'share', btn:null, gems:50, label:'Score shared!', taskKey:'share' };
-    }
+    const uid = getTGUserId();
+    if(uid==='guest') throw new Error('not in Telegram');
+    const resp = await fetch(`${LEADERBOARD_URL}/verify`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user_id:String(uid),type:'channel',channel:`@${CHANNEL_USERNAME}`,init_data:TG.initData||''})
+    });
+    if(resp.ok){
+      const {verified} = await resp.json();
+      if(verified){
+        _claimedTasks.add(taskKey); gemCount+=200; updateGemUI(); saveData();
+        _setBtnState('task-btn-channel','done','✅ Done');
+        toast('+200 💎 Channel verified!','#00e676'); SFX.gem();
+        TG.HapticFeedback.notificationOccurred('success');
+      } else {
+        _setBtnState('task-btn-channel','check','CHECK ✓');
+        toast('Not joined yet — join the channel first!','#ff8c00');
+      }
+    } else { throw new Error('no verify endpoint'); }
   }catch(e){
-    try{ navigator.clipboard.writeText(msg); toast('📋 Link copied!','#ffd200'); }catch(ee){}
+    // Fallback: award after short delay (honour system)
+    await new Promise(r=>setTimeout(r,1500));
+    _claimedTasks.add('channel'); gemCount+=200; updateGemUI(); saveData();
+    _setBtnState('task-btn-channel','done','✅ Done');
+    toast('+200 💎 Channel joined!','#ffd200'); SFX.gem();
   }
 }
 
@@ -2277,54 +2344,74 @@ function claimTask(type, btn){
   if(btn && btn.disabled) return;
   const ONE_TIME = ['channel','share','invite5','invite10'];
   const taskKey  = ONE_TIME.includes(type) ? type : type+'_'+today();
-  if(_claimedTasks.has(taskKey) && type!=='invite'){
-    toast('Already claimed!','#ff8c00'); return;
-  }
+  if(_claimedTasks.has(taskKey) && type!=='invite'){ toast('Already claimed!','#ff8c00'); return; }
   const rewards = { channel:200, invite:100, invite5:500, invite10:1000, play5:50, share:50 };
   const r = rewards[type]||0;
 
-  // ── Channel join — open channel, award ONLY when user returns ──
   if(type==='channel'){
+    if(btn && btn.textContent==='CHECK ✓'){ verifyChannelJoin(); return; }
     TG.openTelegramLink(`https://t.me/${CHANNEL_USERNAME}`);
-    // Queue reward — fires when user comes back to the app
-    _pendingReward = { type, btn, gems:r, label:'Channel joined! +200 💎', taskKey };
-    toast('Join the channel then come back!','#40c4ff');
+    setTimeout(()=>_setBtnState('task-btn-channel','check','CHECK ✓'), 800);
+    toast('Join the channel, then tap CHECK ✓','#40c4ff');
     return;
   }
 
-  // ── Invite — open share sheet, award ONLY when user returns ──
   if(type==='invite'||type==='invite5'||type==='invite10'){
+    if(btn && btn.textContent==='CHECK ✓'){
+      _claimedTasks.add(taskKey); gemCount+=r; updateGemUI(); saveData();
+      btn.textContent='✅ Done'; btn.classList.add('done'); btn.disabled=true;
+      toast(`+${r} 💎 Invite sent!`,'#00e676'); SFX.gem();
+      TG.HapticFeedback.notificationOccurred('success');
+      if(type==='invite10'&&!ownedSkins.has('alien')){ ownedSkins.add('alien'); saveData(); toast('👑 Alien Skin FREE!','#00e676'); }
+      return;
+    }
     const uid  = getTGUserId();
     const link = `https://t.me/${BOT_USERNAME}?start=ref_${uid}`;
     const msg  = `🚀 Join me in Rocket Surge! Beat my score of ${highScore} 🏆\n${link}`;
-    try{
-      TG.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(msg)}`);
-      // Queue reward — fires when user returns after actually sharing
-      const label = type==='invite' ? 'Invite sent! +100 💎'
-                  : type==='invite5' ? 'Milestone! +500 💎'
-                  : 'Legend! +1,000 💎';
-      _pendingReward = { type, btn, gems:r, label, taskKey };
-      toast('Share with a friend then come back!','#40c4ff');
-    }catch(e){
-      try{ navigator.clipboard.writeText(link); toast('📋 Link copied!','#ffd200'); }catch(ee){}
-    }
-    // Alien skin unlock on invite10 — done on return
-    if(type==='invite10'){
-      const orig = _onAppActivated.bind({});
-      // patch to also unlock skin
-      const prev = _pendingReward;
-      _pendingReward = {...prev, onExtra:()=>{
-        if(!ownedSkins.has('alien')){ ownedSkins.add('alien'); saveData(); toast('👑 Alien Skin FREE!','#00e676'); }
-      }};
-    }
+    try{ TG.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(msg)}`); }
+    catch(e){ try{ navigator.clipboard.writeText(link); toast('📋 Copied!','#ffd200'); }catch(ee){} }
+    setTimeout(()=>{ if(btn){ btn.textContent='CHECK ✓'; btn.classList.add('check'); }}, 800);
+    toast('Share with a friend, then tap CHECK ✓','#40c4ff');
     return;
   }
 
-  // ── All other tasks — award directly (play5, etc.) ──
+  if(type==='share'){
+    const shareBtn = document.getElementById('task-btn-share')||btn;
+    if(shareBtn && shareBtn.textContent==='CHECK ✓'){
+      _claimedTasks.add('share'); gemCount+=r; updateGemUI(); saveData();
+      shareBtn.textContent='✅ Done'; shareBtn.classList.add('done'); shareBtn.disabled=true;
+      toast(`+${r} 💎 Share confirmed!`,'#ffd200'); SFX.gem();
+      return;
+    }
+    const uid  = getTGUserId();
+    const name = getTGUserName();
+    const link = `https://t.me/${BOT_USERNAME}?start=ref_${uid}`;
+    const shareMsg = `🚀 ${name} scored ${highScore} in Rocket Surge!\nCan you beat me? 👇\n${link}`;
+    try{ TG.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(shareMsg)}`); }
+    catch(e){ try{ navigator.clipboard.writeText(shareMsg); toast('📋 Copied!','#ffd200'); }catch(ee){} }
+    setTimeout(()=>{ if(shareBtn){ shareBtn.textContent='CHECK ✓'; shareBtn.classList.add('check'); }}, 800);
+    toast('Share your score, then tap CHECK ✓','#40c4ff');
+    return;
+  }
+
+  // Direct award (play5, etc.)
   _claimedTasks.add(taskKey); gemCount+=r; updateGemUI(); saveData();
   toast(`+${r} 💎 Claimed!`,'#ffd200'); SFX.gem();
   TG.HapticFeedback.notificationOccurred('success');
   if(btn&&btn.tagName){ btn.textContent='✅ Done'; btn.classList.add('done'); btn.disabled=true; }
+}
+
+function shareGame(){
+  SFX.tap();
+  const uid  = getTGUserId();
+  const name = getTGUserName();
+  const link = `https://t.me/${BOT_USERNAME}?start=ref_${uid}`;
+  const msg  = `🚀 ${name} scored ${highScore} in Rocket Surge!\nCan you beat me? 👇\n${link}`;
+  try{ TG.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(msg)}`); }
+  catch(e){ try{ navigator.clipboard.writeText(msg); toast('📋 Link copied!','#ffd200'); }catch(ee){} }
+  // Mark share as pending so CHECK button appears in task sheet
+  const shareBtn = document.getElementById('task-btn-share');
+  if(shareBtn && shareBtn.textContent!=='✅ Done'){ shareBtn.textContent='CHECK ✓'; shareBtn.classList.add('check'); }
 }
 function toggleMute(){
   const muted = SFX.toggle();
@@ -2348,9 +2435,10 @@ function syncMuteIcons(muted){
 let _shopTab = 'skins';
 
 function openShop(){
-  SFX.tap();
+  SFX.tap(); closeAllSheets();
   updateGemUI();
   renderShopTab('skins');
+  _enableSheetScroll('shop-modal');
   const modal = document.getElementById('shop-modal');
   modal.style.transform='translateY(0)';
 }
@@ -2779,7 +2867,7 @@ const ST_DEAD    = 2;
 const ST_REVIVE  = 3;   // countdown before resuming after revive
 
 // ── Shared game constants ── (single source of truth)
-const PLAYER_R  = 14;   // collision circle radius (px)
+const PLAYER_R  = 11;   // collision circle radius (px) — slightly forgiving
 const PIPE_W    = 42;   // obstacle beam width (px)
 const GROUND_H  = 60;   // ground strip height (px)
 const GROUND_TW = 48;   // ground tile width for seamless scroll
@@ -2858,7 +2946,7 @@ class Cloud {
 
 class Pipe {
   constructor(x,gapY,gapH){ this.x=x;this.gapY=gapY;this.gapH=gapH;this.passed=false;this.scored=false; }
-  update(spd=2.8){ this.x-=spd; }
+  update(spd){ this.x-=spd; }
   get alive(){ return this.x > -(PIPE_W+10); }
   draw(ctx){ drawBeam(ctx,this.x,0,PIPE_W,this.gapY,true); drawBeam(ctx,this.x,this.gapY+this.gapH,PIPE_W,H-GROUND_H-(this.gapY+this.gapH),false); }
   hits(rx,ry,r){
@@ -2892,7 +2980,8 @@ class RocketPlayer {
   }
 
   thrust(){
-    this.vy        = -360;
+    this.vy        = -380;  // slightly stronger for crisp feel
+    this.y        -= 2;    // instant 2px nudge so response feels immediate
     this.thrustPow = 1.0;
     this.squishY   = 0.75;
     this.squishX   = 1.28;
@@ -4115,8 +4204,8 @@ class GameEngine {
     // ── SPEED PROGRESSION (like Flappy Bird) ──
     // Speed increases every 5 points, caps at score 30
     const speedTier  = Math.min(Math.floor(this.score / 5), 6);
-    this.pipeSpeed   = 2.2 + speedTier * 0.35;          // 2.2 → 4.3 px/frame
-    this.pipeInterval= Math.max(55, 90 - speedTier * 6); // 90 → 55 frames between pipes
+    this.pipeSpeed   = 132 + speedTier * 21;             // 132 → 258 px/sec (was px/frame)
+    this.pipeInterval= Math.max(0.92, 1.50 - speedTier * 0.10); // 1.5 → 0.92 seconds between pipes
     this.gapSize     = Math.max(105, 145 - speedTier * 7);// 145 → 105px gap
 
     for(const c of this.clouds) c.update();
@@ -4128,7 +4217,7 @@ class GameEngine {
       // Pipes keep scrolling so player can see what's ahead
       for(let i=this.pipes.length-1;i>=0;i--){
         const p=this.pipes[i];
-        p.update(this.pipeSpeed * 0.4);
+        p.update(this.pipeSpeed * 0.4 * dt);
         if(!p.alive) this.pipes.splice(i,1);
       }
       // Player hovers gently
@@ -4152,11 +4241,11 @@ class GameEngine {
 
     if(this.state===ST_PLAYING){
       this.player.update(dt);
-      this.pipeTimer++;
+      this.pipeTimer+=dt;
       if(this.pipeTimer>=this.pipeInterval){ this.pipeTimer=0; this.spawnPipe(); }
       for(let i=this.pipes.length-1;i>=0;i--){
         const p=this.pipes[i];
-        p.update(this.pipeSpeed);
+        p.update(this.pipeSpeed * dt);
         if(!p.alive){ this.pipes.splice(i,1); continue; }
         if(!p.scored && p.x+PIPE_W<this.player.x){
           p.scored=true;
@@ -4309,7 +4398,7 @@ class GameEngine {
   restart(){
     this.state=ST_MENU; this.score=0; this.combo=0;
     this.pipes=[]; this.particles=[]; this.scoreFloats=[]; this.pipeTimer=0; this.gx=0;
-    this.pipeSpeed=2.2; this.pipeInterval=90; this.gapSize=145;
+    this.pipeSpeed=132; this.pipeInterval=1.5; this.gapSize=145; this.pipeTimer=0;
     this.player=new RocketPlayer();
     isNewBest=false;
     document.getElementById('score-num').textContent='0';
@@ -4550,12 +4639,17 @@ const G = new GameEngine();
 // ── INPUT ──
 // Tap-layer is only visible during ST_PLAYING — it catches in-flight taps
 const tapLayer = document.getElementById('tap-layer');
-// Use pointerdown — fires immediately on touch with zero 300ms delay
-// Single unified handler for mouse + touch + stylus
-tapLayer.addEventListener('pointerdown', e=>{
-  e.preventDefault();
+let _lastTap = 0;
+function _doTap(){
+  const now = Date.now();
+  if(now - _lastTap < 50) return; // debounce: ignore taps <50ms apart
+  _lastTap = now;
   if(G.state===ST_PLAYING) G.tap();
-}, {passive:false});
+}
+// pointerdown — zero delay, works on all modern browsers
+tapLayer.addEventListener('pointerdown', e=>{ e.preventDefault(); _doTap(); }, {passive:false});
+// touchstart fallback for older Android WebViews
+tapLayer.addEventListener('touchstart', e=>{ e.preventDefault(); _doTap(); }, {passive:false});
 // Keyboard spacebar
 document.addEventListener('keydown', e=>{
   if(e.code==='Space'){ e.preventDefault(); if(G.state===ST_PLAYING) G.tap(); }
@@ -4587,7 +4681,7 @@ function scaleGame(){
     nav.style.top           = (top + scaledH - 100 * scale) + 'px';
     nav.style.transformOrigin = 'top left';
     nav.style.transform     = `scale(${scale})`;
-    nav.style.zIndex        = '100';
+    nav.style.zIndex        = '190';
     nav.style.pointerEvents = 'none';
   }
 }
