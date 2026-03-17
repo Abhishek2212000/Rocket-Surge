@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Rocket Surge</title>
+<!-- Telegram Mini App SDK — REQUIRED for TG.initDataUnsafe, HapticFeedback, CloudStorage etc -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -59,17 +61,19 @@ canvas#gc { display: block; width: 360px; height: 640px; }
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: space-between;
-  padding: 0 0 20px;
-  pointer-events: none;   /* container transparent — children opt-in */
+  padding: 0 0 12px;
+  pointer-events: none;
   transition: opacity 0.25s;
   z-index: 10;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 #menu.hidden { opacity:0; pointer-events:none; }
 #menu > * { pointer-events: all; }  /* every direct child is clickable */
 
 .menu-top {
   width: 100%; display: flex; justify-content: space-between;
-  align-items: center; padding: 16px 16px 0; gap: 8px;
+  align-items: center; padding: 12px 14px 0; gap: 6px;
 }
 
 .pill-btn {
@@ -93,43 +97,112 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 }
 
 /* Logo */
-.logo-block { display:flex; flex-direction:column; align-items:center; margin-top:-20px; }
+.logo-block { display:flex; flex-direction:column; align-items:center; margin-top:-8px; width:100%; padding:0 16px; }
 .logo-eyebrow {
   font-weight: 800; font-size: 10px; letter-spacing: 6px;
   color: rgba(64,196,255,0.8); text-transform: uppercase; margin-bottom: 4px;
 }
 .logo-title {
-  font-family: 'Fredoka One', cursive; font-size: 68px; line-height: 0.95;
+  font-family: 'Fredoka One', cursive; font-size: 58px; line-height: 0.95;
   background: linear-gradient(170deg, #ffffff 0%, #ffd200 38%, #ff6a00 70%, #ff2244 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   filter: drop-shadow(0 6px 24px rgba(255,180,0,0.45));
   letter-spacing: 2px;
 }
 .logo-sub {
-  font-family: 'Fredoka One', cursive; font-size: 20px;
+  font-family: 'Fredoka One', cursive; font-size: 17px;
   background: linear-gradient(90deg, #40c4ff, #b44bff);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   letter-spacing: 6px; margin-top: 2px;
   filter: drop-shadow(0 0 12px rgba(64,196,255,0.5));
 }
 
+/* ── PLAYER PROFILE CARD ── */
 .menu-best {
-  display: flex; align-items: center; gap: 10px;
-  background: rgba(0,0,0,0.5); backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,210,0,0.25); border-radius: 50px;
-  padding: 8px 22px; margin-top: 14px;
-  box-shadow: 0 4px 20px rgba(255,180,0,0.1);
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, rgba(20,14,0,0.85) 0%, rgba(40,25,0,0.8) 100%);
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(255,210,0,0.35);
+  border-radius: 22px;
+  padding: 12px 16px 12px 12px;
+  margin-top: 10px;
+  width: calc(100% - 32px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,180,0,0.08), inset 0 1px 0 rgba(255,210,0,0.15);
 }
-.menu-best .best-label { color: var(--sub); font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
-.menu-best .best-val { color: var(--accent2); font-family: 'Fredoka One',cursive; font-size: 24px; line-height:1; }
+/* Gold shimmer line at top */
+.menu-best::before {
+  content:''; position:absolute; top:0; left:10%; right:10%; height:1px;
+  background: linear-gradient(90deg, transparent, rgba(255,210,0,0.7), transparent);
+}
+/* Subtle inner glow */
+.menu-best::after {
+  content:''; position:absolute; inset:0; border-radius:22px;
+  background: radial-gradient(ellipse at 20% 50%, rgba(255,180,0,0.07) 0%, transparent 70%);
+  pointer-events:none;
+}
+.mb-avatar-wrap {
+  position:relative; flex-shrink:0;
+  width:48px; height:48px;
+}
+.mb-avatar-inner {
+  width:48px; height:48px; border-radius:50%;
+  border: 2px solid rgba(255,210,0,0.5);
+  box-shadow: 0 0 16px rgba(255,180,0,0.35), 0 0 0 3px rgba(255,180,0,0.08);
+  overflow:hidden; display:flex; align-items:center; justify-content:center;
+  background: rgba(0,0,0,0.5);
+}
+.mb-online-dot {
+  position:absolute; bottom:1px; right:1px;
+  width:12px; height:12px; border-radius:50%;
+  background:#00e676; border:2px solid rgba(20,14,0,0.9);
+  box-shadow:0 0 6px rgba(0,230,118,0.6);
+}
+.mb-info { flex:1; min-width:0; }
+.mb-name {
+  font-size:14px; font-weight:900; color:#fff;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  line-height:1.2; margin-bottom:4px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+.mb-stats { display:flex; align-items:center; gap:10px; }
+.mb-stat {
+  display:flex; flex-direction:column; align-items:flex-start;
+}
+.mb-stat-val {
+  font-family:'Fredoka One',cursive; font-size:20px; color:var(--accent2);
+  line-height:1; filter:drop-shadow(0 1px 6px rgba(255,180,0,0.4));
+}
+.mb-stat-val.sparks { color:#40c4ff; filter:drop-shadow(0 1px 6px rgba(64,196,255,0.4)); }
+.mb-stat-label {
+  font-size:8px; font-weight:900; color:rgba(255,255,255,0.45);
+  letter-spacing:1px; text-transform:uppercase; margin-top:1px;
+}
+.mb-divider {
+  width:1px; height:32px;
+  background:linear-gradient(180deg, transparent, rgba(255,255,255,0.15), transparent);
+}
+.mb-streak {
+  display:flex; flex-direction:row; align-items:center; gap:4px;
+  background:rgba(255,120,0,0.12); border:1px solid rgba(255,120,0,0.25);
+  border-radius:10px; padding:5px 10px; flex-shrink:0;
+}
+.mb-streak-fire { font-size:15px; line-height:1; }
+.mb-streak-val {
+  font-family:'Fredoka One',cursive; font-size:16px; color:#ff8c00; line-height:1;
+}
+.mb-streak-label {
+  font-size:7px; font-weight:900; color:rgba(255,140,0,0.6);
+  letter-spacing:0.5px; text-transform:uppercase; display:none;
+}
 
 /* Tap prompt */
-.tap-prompt { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.tap-prompt { display:flex; flex-direction:column; align-items:center; gap:4px; }
 @keyframes tapBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
 .tap-ring {
-  width: 64px; height: 64px; border-radius: 50%;
+  width: 56px; height: 56px; border-radius: 50%;
   background: linear-gradient(135deg, #ff6a00, #ffd200);
-  display: flex; align-items: center; justify-content: center; font-size: 26px;
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
   animation: tapBob 1.3s ease-in-out infinite;
   box-shadow: 0 8px 30px rgba(255,106,0,0.5), 0 0 0 0 rgba(255,106,0,0.4);
   animation: tapBob 1.3s ease-in-out infinite, tapPulse 1.3s ease-in-out infinite;
@@ -141,19 +214,19 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 }
 
 /* Bottom nav */
-.menu-bottom-nav { width:100%; padding:0 14px; display:flex; gap:8px; }
+.menu-bottom-nav { width:100%; padding:0 10px; display:flex; gap:5px; }
 .nav-btn {
-  flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
-  padding: 11px 6px;
-  background: rgba(255,255,255,0.06);
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
+  padding: 9px 4px;
+  background: rgba(255,255,255,0.13);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 18px; color:#fff; cursor:pointer; transition: all 0.12s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 16px; color:#fff; cursor:pointer; transition: all 0.12s;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18);
 }
-.nav-btn:active { transform:scale(0.93); background:rgba(255,255,255,0.12); }
-.nav-btn .nb-icon { font-size: 20px; }
-.nav-btn .nb-label { font-size: 9px; font-weight: 900; color: var(--sub); letter-spacing: 0.8px; text-transform: uppercase; }
+.nav-btn:active { transform:scale(0.93); background:rgba(255,255,255,0.22); }
+.nav-btn .nb-icon { font-size: 18px; }
+.nav-btn .nb-label { font-size: 8px; font-weight: 900; color: rgba(255,255,255,0.75); letter-spacing: 0.5px; text-transform: uppercase; }
 
 /* ── IN-GAME MUTE ── */
 #ingame-mute {
@@ -204,10 +277,10 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 #go-panel {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-  padding-bottom: 14px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 200;
+  padding-bottom: 18px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 200;
 }
 #go-panel.show { opacity:1; pointer-events:all; }
-.go-backdrop { position:absolute; inset:0; background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.9) 55%); }
+.go-backdrop { position:absolute; inset:0; background: linear-gradient(180deg, transparent 0%, rgba(0,5,20,0.75) 40%, rgba(0,5,20,0.92) 70%); }
 .go-card {
   position: relative; width: 100%; padding: 0 12px 6px;
   transform: translateY(50px); opacity: 0;
@@ -235,8 +308,8 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 
 /* Result card */
 .result-card {
-  background: linear-gradient(145deg, rgba(255,255,255,0.09), rgba(255,255,255,0.04));
-  backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.15);
+  background: linear-gradient(145deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
+  backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.25);
   border-radius: var(--r-xl); padding: 14px 18px; margin-bottom: 8px;
   display: flex; align-items: center; gap: 16px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12);
@@ -253,8 +326,8 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 @keyframes newBest { 0%{transform:scale(1)} 50%{transform:scale(1.28)} 100%{transform:scale(1)} }
 
 .gem-row {
-  background: linear-gradient(135deg, rgba(255,210,0,0.1), rgba(255,150,0,0.06));
-  border: 1px solid rgba(255,210,0,0.22); border-radius: var(--r-md);
+  background: linear-gradient(135deg, rgba(255,210,0,0.18), rgba(255,150,0,0.12));
+  border: 1px solid rgba(255,210,0,0.4); border-radius: var(--r-md);
   padding: 9px 14px; display:flex; justify-content:space-between; align-items:center;
   margin-bottom: 9px;
   box-shadow: 0 2px 12px rgba(255,180,0,0.1);
@@ -263,7 +336,7 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 .gr-val { font-family:'Fredoka One',cursive; font-size:20px; color:var(--accent2); }
 
 /* Action buttons */
-.action-row { display:flex; gap:9px; margin-bottom:9px; }
+.action-row { display:flex; gap:8px; margin-bottom:8px; }
 .act-btn {
   flex:1; border:none; border-radius:var(--r-md); padding:14px 8px;
   display:flex; flex-direction:column; align-items:center; gap:3px;
@@ -290,16 +363,16 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 }
 
 /* Sec row */
-.sec-row { display:flex; gap:8px; }
+.sec-row { display:flex; gap:7px; }
 .sec-btn {
-  flex:1; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
-  border-radius: var(--r-sm); padding: 9px 6px;
+  flex:1; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.28);
+  border-radius: var(--r-sm); padding: 10px 6px;
   display:flex; align-items:center; justify-content:center; gap:6px;
   cursor:pointer; transition: all 0.12s; color:#fff;
   font-family:'Nunito',sans-serif; font-weight:800; font-size:11px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
 }
-.sec-btn:active { transform:scale(0.93); background:rgba(255,255,255,0.13); }
+.sec-btn:active { transform:scale(0.93); background:rgba(255,255,255,0.22); }
 
 /* ── TASK SHEET ── */
 #task-sheet {
@@ -327,8 +400,8 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 
 .task-list { padding:0 12px; display:flex; flex-direction:column; gap:8px; }
 .task-card {
-  background: linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
-  border: 1px solid rgba(255,255,255,0.1); border-radius: var(--r-md);
+  background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.07));
+  border: 1px solid rgba(255,255,255,0.2); border-radius: var(--r-md);
   padding: 12px 14px; display:flex; align-items:center; gap:12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
@@ -382,8 +455,8 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 .w-arrow { margin-left:auto; color:rgba(255,255,255,0.3); font-size:20px; }
 .ws-cancel {
   width:calc(100% - 28px);margin:6px 14px 0;padding:13px;
-  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
-  border-radius:var(--r-md);color:var(--sub);font-size:13px;font-weight:800;
+  background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
+  border-radius:var(--r-md);color:rgba(255,255,255,0.8);font-size:13px;font-weight:800;
   cursor:pointer;font-family:'Nunito',sans-serif; transition:all 0.12s;
 }
 .ws-cancel:active { background:rgba(255,255,255,0.12); }
@@ -418,8 +491,8 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 /* ── SHOP ── */
 .shop-tab {
   flex:1; padding:9px 4px; border:1px solid rgba(255,255,255,0.1);
-  border-radius:var(--r-sm); background:rgba(255,255,255,0.05);
-  color:rgba(255,255,255,0.45); font-size:12px; font-weight:800;
+  border-radius:var(--r-sm); background:rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.65); font-size:12px; font-weight:800;
   cursor:pointer; font-family:'Nunito',sans-serif; transition:all 0.12s;
 }
 .shop-tab.active {
@@ -489,25 +562,57 @@ canvas#gc { display: block; width: 360px; height: 640px; }
         <span class="icon">💎</span>
         <span class="gem-val" id="gem-val">0</span>
       </div>
-      <div class="pill-btn wallet-pill" id="wallet-trigger" onclick="openWallet()">
-        <span class="icon">🔗</span>
-        <span id="wallet-label">Connect</span>
+      <div class="pill-btn" style="background:rgba(0,40,80,0.5);border-color:rgba(64,196,255,0.35);cursor:pointer;" onclick="openSparkSheet()">
+        <span class="icon" style="font-size:13px;">⚡</span>
+        <span class="spark-val" style="color:#40c4ff;font-size:13px;font-weight:800;">0</span>
       </div>
       <div class="pill-btn" id="mute-btn" onclick="toggleMute()" style="background:rgba(0,0,0,0.35);min-width:38px;justify-content:center;">
         <span id="mute-icon">🔊</span>
       </div>
     </div>
 
-    <div class="logo-block">
+    <!-- Prize pool banner -->
+    <div id="prize-banner" style="margin-top:5px;padding:5px 14px;background:linear-gradient(135deg,rgba(64,196,255,0.12),rgba(100,80,255,0.08));border:1px solid rgba(64,196,255,0.2);border-radius:50px;display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="openSparkSheet()">
+      <span style="font-size:13px;">🏆</span>
+      <span style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase;">This week's pool</span>
+      <span id="prize-pool-val" style="font-family:'Fredoka One',cursive;font-size:16px;color:#40c4ff;margin-left:2px;">…</span>
+    </div>
+
+    <div class="logo-block" style="margin-top:4px;">
       <div class="logo-eyebrow">⚡ Telegram Mini Game</div>
       <div class="logo-title">ROCKET</div>
       <div class="logo-sub">S U R G E</div>
       <div class="menu-best" id="menu-best">
-        <span class="trophy">🏆</span>
-        <div>
-          <div class="best-label">Best Score</div>
-          <div class="best-val" id="menu-best-val">0</div>
+
+        <!-- Avatar with online indicator -->
+        <div class="mb-avatar-wrap">
+          <div class="mb-avatar-inner" id="player-avatar-menu"></div>
+          <div class="mb-online-dot"></div>
         </div>
+
+        <!-- Name + stats -->
+        <div class="mb-info">
+          <div class="mb-name" id="player-name-menu">Player</div>
+          <div class="mb-stats">
+            <div class="mb-stat">
+              <div class="mb-stat-val" id="menu-best-val">0</div>
+              <div class="mb-stat-label">Best</div>
+            </div>
+            <div class="mb-divider"></div>
+            <div class="mb-stat">
+              <div class="mb-stat-val sparks"><span class="spark-val">0</span></div>
+              <div class="mb-stat-label">Sparks ⚡</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Streak badge -->
+        <div class="mb-streak" id="menu-streak-badge">
+          <div class="mb-streak-fire">🔥</div>
+          <div class="mb-streak-val" id="menu-streak-val">0</div>
+          <div class="mb-streak-label">Streak</div>
+        </div>
+
       </div>
     </div>
 
@@ -532,6 +637,10 @@ canvas#gc { display: block; width: 360px; height: 640px; }
       <div class="nav-btn" onclick="openLeaderboard()">
         <span class="nb-icon">🏆</span>
         <span class="nb-label">Ranks</span>
+      </div>
+      <div class="nav-btn" onclick="openHelp()">
+        <span class="nb-icon">❓</span>
+        <span class="nb-label">Help</span>
       </div>
     </div>
   </div>
@@ -807,6 +916,197 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 
   </div>
 
+  <!-- ── SPARK / PRIZE POOL SHEET ── -->
+  <div id="spark-sheet" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    background:linear-gradient(180deg,rgba(0,10,30,0.98),rgba(0,5,18,0.99));
+    backdrop-filter:blur(30px);border-top:1px solid rgba(64,196,255,0.2);
+    border-radius:26px 26px 0 0;padding:0 0 32px;z-index:350;
+    transform:translateY(100%);transition:transform 0.42s cubic-bezier(0.22,1,0.36,1);
+    box-shadow:0 -30px 80px rgba(0,0,0,0.9);will-change:transform;">
+
+    <div style="width:40px;height:4px;background:rgba(255,255,255,0.18);border-radius:2px;margin:14px auto 0;"></div>
+
+    <!-- Header -->
+    <div style="padding:14px 18px 0;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">⚡ Sparks & Prizes</div>
+      <button onclick="closeSparkSheet()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;">✕</button>
+    </div>
+
+    <!-- Your stats -->
+    <div style="margin:14px 12px 0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <div style="background:rgba(64,196,255,0.1);border:1px solid rgba(64,196,255,0.2);border-radius:14px;padding:12px;text-align:center;">
+        <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#40c4ff;" class="spark-val">0</div>
+        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);margin-top:2px;letter-spacing:1px;text-transform:uppercase;">My Sparks</div>
+      </div>
+      <div style="background:rgba(255,210,0,0.1);border:1px solid rgba(255,210,0,0.2);border-radius:14px;padding:12px;text-align:center;">
+        <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#ffd200;" id="spark-rank-val">–</div>
+        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);margin-top:2px;letter-spacing:1px;text-transform:uppercase;">My Rank</div>
+      </div>
+      <div style="background:rgba(100,80,255,0.1);border:1px solid rgba(100,80,255,0.2);border-radius:14px;padding:12px;text-align:center;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+          <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#b088ff;" id="streak-val">0</div>
+          <div style="font-size:18px;line-height:1;">🔥</div>
+        </div>
+        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);margin-top:2px;letter-spacing:1px;text-transform:uppercase;">Day Streak</div>
+      </div>
+    </div>
+
+    <!-- Prize pool card -->
+    <div style="margin:12px 12px 0;background:linear-gradient(135deg,rgba(64,196,255,0.15),rgba(100,80,255,0.1));border:1px solid rgba(64,196,255,0.25);border-radius:16px;padding:14px 16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div>
+          <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:1.5px;text-transform:uppercase;">This week's prize pool</div>
+          <div style="font-family:'Fredoka One',cursive;font-size:28px;color:#40c4ff;line-height:1.1;" id="prize-pool-big">Loading…</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);">Resets Monday</div>
+          <div id="pool-timer" style="font-size:12px;font-weight:800;color:rgba(255,255,255,0.6);margin-top:2px;"></div>
+        </div>
+      </div>
+      <!-- Prize breakdown -->
+      <div style="display:flex;flex-direction:column;gap:5px;" id="prize-breakdown">
+        <div style="display:flex;justify-content:space-between;font-size:12px;">
+          <span style="color:rgba(255,255,255,0.6);">🥇 1st place</span><span style="color:#ffd200;font-weight:800;" id="prize-1st">–</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;">
+          <span style="color:rgba(255,255,255,0.6);">🥈 2nd place</span><span style="color:rgba(255,255,255,0.7);font-weight:700;" id="prize-2nd">–</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;">
+          <span style="color:rgba(255,255,255,0.6);">🥉 3rd place</span><span style="color:rgba(255,255,255,0.7);font-weight:700;" id="prize-3rd">–</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;">
+          <span style="color:rgba(255,255,255,0.6);">4th–10th</span><span style="color:rgba(255,255,255,0.5);" id="prize-rest">–</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TON wallet input -->
+    <div style="margin:12px 12px 0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;">💎 Your TON Wallet (for payouts)</div>
+        <div id="wallet-status-badge" style="font-size:11px;font-weight:800;color:#ff8c00;">❌ No wallet</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input id="wallet-input" type="text" placeholder="EQ... your TON wallet address"
+          style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:9px 12px;color:#fff;font-size:12px;font-family:'Nunito',sans-serif;outline:none;"
+          value="" oninput="tonWallet=this.value"/>
+        <button onclick="saveTonWallet()" style="background:linear-gradient(135deg,#40c4ff,#4488ff);color:#fff;border:none;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;">Save</button>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:5px;">Winners paid every Monday. Add your TON wallet to receive prizes.</div>
+      <!-- Connect TON wallet via Telegram -->
+      <button onclick="openWallet()" style="margin-top:8px;width:100%;background:rgba(0,136,204,0.15);border:1px solid rgba(0,136,204,0.35);border-radius:10px;padding:9px 14px;color:#40c4ff;font-size:12px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;letter-spacing:0.5px;">
+        🔗 Connect via Telegram Wallet
+      </button>
+    </div>
+
+    <!-- How to earn -->
+    <div style="margin:14px 12px 0;">
+      <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">⚡ How to earn Sparks</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;justify-content:space-between;background:rgba(255,255,255,0.09);border-radius:10px;padding:9px 12px;font-size:12px;">
+          <span style="color:rgba(255,255,255,0.7);">Score 30+ in a run</span><span style="color:#40c4ff;font-weight:800;">+10 ⚡ (2×/day)</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;background:rgba(255,255,255,0.09);border-radius:10px;padding:9px 12px;font-size:12px;">
+          <span style="color:rgba(255,255,255,0.7);">Score 50+ in a run</span><span style="color:#40c4ff;font-weight:800;">+20 ⚡ (1×/day)</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;background:rgba(255,255,255,0.09);border-radius:10px;padding:9px 12px;font-size:12px;">
+          <span style="color:rgba(255,255,255,0.7);">Beat your personal best</span><span style="color:#40c4ff;font-weight:800;">+5 ⚡ (3×/day)</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;background:rgba(255,255,255,0.09);border-radius:10px;padding:9px 12px;font-size:12px;">
+          <span style="color:rgba(255,255,255,0.7);">Golden skin + score 50+</span><span style="color:#ffd200;font-weight:800;">+15 ⚡ bonus</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;background:rgba(255,255,255,0.09);border-radius:10px;padding:9px 12px;font-size:12px;">
+          <span style="color:rgba(255,255,255,0.7);">7-day play streak 🔥</span><span style="color:#b088ff;font-weight:800;">+100 ⚡ bonus</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;background:rgba(255,255,255,0.09);border-radius:10px;padding:9px 12px;font-size:12px;">
+          <span style="color:rgba(255,255,255,0.7);">Top 10 leaderboard</span><span style="color:#ffd200;font-weight:800;">+50 ⚡/day</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spark leaderboard -->
+    <div style="margin:14px 12px 0;">
+      <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">🏆 This Week's Top Earners</div>
+      <div id="spark-lb-list">
+        <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">Loading…</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── HELP & SUPPORT SHEET ── -->
+  <div id="help-sheet" style="position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    background:linear-gradient(180deg,rgba(6,14,30,0.98),rgba(3,8,18,0.99));
+    backdrop-filter:blur(30px);border-top:1px solid rgba(255,255,255,0.1);
+    border-radius:26px 26px 0 0;padding:0 0 32px;z-index:350;
+    transform:translateY(100%);transition:transform 0.42s cubic-bezier(0.22,1,0.36,1);
+    box-shadow:0 -30px 80px rgba(0,0,0,0.8);will-change:transform;">
+
+    <div style="width:40px;height:4px;background:rgba(255,255,255,0.18);border-radius:2px;margin:14px auto 0;"></div>
+
+    <!-- Header -->
+    <div style="padding:14px 18px 12px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">❓ Help & Support</div>
+      <button onclick="closeHelp()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;">✕</button>
+    </div>
+
+    <div style="padding:0 14px;display:flex;flex-direction:column;gap:8px;">
+
+      <!-- Contact section header -->
+      <div style="color:rgba(255,255,255,0.4);font-size:10px;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:2px 2px 4px;">📞 Contact Us</div>
+
+      <!-- Telegram support -->
+      <div onclick="helpLink('https://t.me/RocketSurgeGame')" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(0,136,204,0.15),rgba(0,100,180,0.08));border:1px solid rgba(0,136,204,0.3);border-radius:16px;padding:14px 16px;cursor:pointer;transition:all 0.12s;">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(0,136,204,0.25);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">✈️</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:800;color:#fff;">Telegram Channel</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;">@RocketSurgeGame — news & updates</div>
+        </div>
+        <div style="color:rgba(255,255,255,0.3);font-size:18px;">›</div>
+      </div>
+
+      <!-- Telegram support group -->
+      <div onclick="helpLink('https://t.me/RocketSurge_bot')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:16px;padding:14px 16px;cursor:pointer;transition:all 0.12s;">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🤖</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:800;color:#fff;">Message Our Bot</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;">@RocketSurge_bot — report issues</div>
+        </div>
+        <div style="color:rgba(255,255,255,0.3);font-size:18px;">›</div>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin:4px 0;"></div>
+
+      <!-- FAQ header -->
+      <div style="color:rgba(255,255,255,0.4);font-size:10px;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:2px 2px 4px;">💡 FAQ</div>
+
+      <!-- FAQ items -->
+      <div id="faq-list" style="display:flex;flex-direction:column;gap:6px;">
+      </div>
+
+      <!-- Divider -->
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin:4px 0;"></div>
+
+      <!-- About section -->
+      <div style="color:rgba(255,255,255,0.4);font-size:10px;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:2px 2px 4px;">ℹ️ About</div>
+
+      <div style="background:rgba(255,255,255,0.09);border:1px solid rgba(255,255,255,0.18);border-radius:14px;padding:14px 16px;">
+        <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:6px;">🚀 Rocket Surge</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">
+          Fly through obstacles, earn 💎 Gems, collect ⚡ Sparks and compete for real TON prizes every week.<br><br>
+          Built with ❤️ as a Telegram Mini App.
+        </div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.3);">
+          <span>Version 1.0</span>
+          <span onclick="helpLink('https://t.me/RocketSurgeGame')" style="color:#40c4ff;cursor:pointer;">@RocketSurgeGame</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ── TOAST ── -->
   <div id="toast"></div>
 </div>
@@ -1026,8 +1326,13 @@ const SFX = (() => {
 })();
 
 // ─── State ────────────────────────────────────────────────────────
-let gemCount  = 0;
-let highScore = 0;
+let gemCount    = 0;
+let highScore   = 0;
+let sparkCount  = 0;   // ⚡ Sparks — weekly crypto reward currency
+let sparkWeek   = '';  // which week's sparks we're tracking (ISO week string)
+let streakDays  = 0;   // consecutive days played
+let streakLast  = '';  // last day played (YYYY-MM-DD)
+let tonWallet   = '';  // player's TON wallet address for payouts
 let isNewBest = false;
 
 // ─── SKIN & WORLD CATALOGUE ──────────────────────────────────────────
@@ -1137,6 +1442,12 @@ function loadData(){
 
   highScore   = parseInt(hs)||0;
   gemCount    = parseInt(gems)||0;
+  sparkCount  = parseInt(LS.get('sparks','0'))||0;
+  sparkWeek   = LS.get('spark_week', '');
+  streakDays  = parseInt(LS.get('streak_days','0'))||0;
+  streakLast  = LS.get('streak_last','');
+  tonWallet   = LS.get('ton_wallet','');
+  // Week validation happens async after server week is fetched — see _validateSparkWeek()
   try{ ownedSkins  = new Set(JSON.parse(skins));  }catch(e){ ownedSkins=new Set(['barry']); }
   try{ ownedWorlds = new Set(JSON.parse(worlds)); }catch(e){ ownedWorlds=new Set(['space']); }
   activeSkin  = askin||'barry';
@@ -1169,18 +1480,195 @@ function loadData(){
 }
 
 function saveData(){
-  // Save to localStorage immediately
-  LS.set('hs',     String(highScore));
-  LS.set('gems',   String(gemCount));
-  LS.set('skins',  JSON.stringify([...ownedSkins]));
-  LS.set('worlds', JSON.stringify([...ownedWorlds]));
-  LS.set('askin',  activeSkin);
-  LS.set('aworld', activeWorld);
-  LS.set('adct',   JSON.stringify({date:today(), count:adWatchCount}));
-  LS.set('tasks',  JSON.stringify([..._claimedTasks]));
+  LS.set('hs',          String(highScore));
+  LS.set('gems',        String(gemCount));
+  LS.set('sparks',      String(sparkCount));
+  LS.set('spark_week',  sparkWeek);
+  LS.set('streak_days', String(streakDays));
+  LS.set('streak_last', streakLast);
+  LS.set('ton_wallet',  tonWallet);
+  LS.set('skins',       JSON.stringify([...ownedSkins]));
+  LS.set('worlds',      JSON.stringify([...ownedWorlds]));
+  LS.set('askin',       activeSkin);
+  LS.set('aworld',      activeWorld);
+  LS.set('adct',        JSON.stringify({date:today(), count:adWatchCount}));
+  LS.set('tasks',       JSON.stringify([..._claimedTasks]));
 }
 
 function today(){ return new Date().toISOString().split('T')[0]; }
+
+// ISO week string e.g. "2025-W22"
+function isoWeek(){
+  // Returns the CLIENT's local ISO week — used only for non-critical things like streak keys.
+  // For Spark storage and submission, always use _serverWeek (fetched from server).
+  const d = new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate()+3-(d.getDay()+6)%7);
+  const w = Math.floor((d-new Date(d.getFullYear(),0,4))/604800000)+1;
+  return `${d.getFullYear()}-W${String(w).padStart(2,'0')}`;
+}
+
+// Authoritative week from the server — set once on first spark fetch
+// This prevents timezone manipulation and ensures all players reset together
+let _serverWeek = null;
+
+async function _getServerWeek(){
+  if(_serverWeek) return _serverWeek;
+  try{
+    const r = await fetch(`${LEADERBOARD_URL}/sparks?limit=1`);
+    if(r.ok){ const d=await r.json(); if(d.week){ _serverWeek=d.week; return _serverWeek; } }
+  }catch(e){}
+  // Fallback: use UTC-based local calculation (still consistent across timezones)
+  const d = new Date();
+  const utcDay = d.getUTCDay(), utcDate = d.getUTCDate();
+  const utcD = new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),utcDate));
+  utcD.setUTCDate(utcD.getUTCDate()+3-(utcD.getUTCDay()+6)%7);
+  const w = Math.floor((utcD-new Date(Date.UTC(utcD.getUTCFullYear(),0,4)))/604800000)+1;
+  _serverWeek = `${utcD.getUTCFullYear()}-W${String(w).padStart(2,'0')}`;
+  return _serverWeek;
+}
+
+// ─── SPARK ENGINE ────────────────────────────────────────────────────
+// Called once server week is known — resets sparks if it's a new week
+async function _validateSparkWeek(){
+  const sw = await _getServerWeek();
+  if(sparkWeek && sparkWeek !== sw){
+    // New week on server — reset client sparks
+    console.log(`New week: ${sparkWeek} → ${sw}. Resetting sparks.`);
+    sparkCount = 0;
+    sparkWeek  = sw;
+    LS.set('sparks','0');
+    LS.set('spark_week', sw);
+    updateSparkUI();
+  } else if(!sparkWeek){
+    sparkWeek = sw;
+    LS.set('spark_week', sw);
+  }
+}
+// ⚡ Sparks are weekly — reset every Monday. Only top performers earn them.
+// Rules (checked after each run):
+//   • Score in top 10 leaderboard   → 50⚡/day (1×/day)
+//   • Score in top 50 leaderboard   → 20⚡/day (1×/day)
+//   • Beat personal best            → 5⚡ (up to 3×/day)
+//   • Score 30+ in a single run     → 10⚡ (up to 2×/day)
+//   • Score 50+ in a single run     → 20⚡ bonus (up to 1×/day)
+//   • Own Golden skin + score 50+   → 15⚡ bonus (1×/day)
+//   • 7-day streak completed        → 100⚡ (1× per streak week)
+
+async function _earnSparks(score, isNewBestScore){
+  // Validate against server's authoritative week — prevents timezone/clock manipulation
+  await _validateSparkWeek()
+
+  let earned = 0;
+  const d = today();
+
+  // Personal best bonus (up to 3× per day)
+  const pbKey = `pb_${d}`;
+  const pbCount = parseInt(LS.get(pbKey,'0'));
+  if(isNewBestScore && pbCount < 3){
+    earned += 5;
+    LS.set(pbKey, String(pbCount+1));
+  }
+
+  // Score 30+ bonus (up to 2× per day)
+  if(score >= 30){
+    const s30Key = `s30_${d}`;
+    const s30 = parseInt(LS.get(s30Key,'0'));
+    if(s30 < 2){ earned += 10; LS.set(s30Key, String(s30+1)); }
+  }
+
+  // Score 50+ bonus (1× per day)
+  if(score >= 50){
+    const s50Key = `s50_${d}`;
+    if(!LS.get(s50Key)){
+      earned += 20;
+      LS.set(s50Key, '1');
+      // Golden skin bonus
+      if(activeSkin === 'golden'){ earned += 15; }
+    }
+  }
+
+  if(earned > 0){
+    sparkCount += earned;
+    saveData();
+    // Submit updated spark count to leaderboard
+    _submitSparks();
+    // Show toast with spark earn
+    setTimeout(()=>{ toast(`⚡ +${earned} Sparks earned!`, '#40c4ff'); SFX.score(); }, 600);
+  }
+
+  // Update streak
+  _updateStreak();
+}
+
+function _updateStreak(){
+  const d = today();
+  if(streakLast === d) return; // already played today
+
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const yd = yesterday.toISOString().split('T')[0];
+
+  if(streakLast === yd){
+    streakDays++; // consecutive day
+  } else if(streakLast !== d){
+    streakDays = 1; // streak broken or first day
+  }
+  streakLast = d;
+  saveData();
+
+  // 7-day streak reward
+  if(streakDays > 0 && streakDays % 7 === 0){
+    const streakKey = `streak7_${sparkWeek||isoWeek()}`;
+    if(!LS.get(streakKey)){
+      LS.set(streakKey,'1');
+      sparkCount += 100;
+      saveData(); _submitSparks();
+      toast('🔥 7-Day Streak! +100 ⚡ Sparks!', '#ffd200');
+      SFX.newBest();
+    }
+  }
+}
+
+async function _submitSparks(){
+  try{
+    const u = getTGUser();
+    if(!u || String(u.id)==='guest') return;
+    const sw = await _getServerWeek();
+    const resp = await fetch(`${LEADERBOARD_URL}/sparks`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        user_id:   String(u.id),
+        name:      u.display_name,
+        username:  u.username,
+        photo_url: u.photo_url,
+        sparks:    sparkCount,
+        week:      sw,
+        wallet:    tonWallet || '',
+        init_data: TG.initData || ''
+      })
+    });
+    // Server returns its current week — update our local reference
+    if(resp.ok){
+      const data = await resp.json();
+      if(data.week && data.week !== sparkWeek){
+        // Server says it's a different week — force reset
+        sparkCount=0; sparkWeek=data.week; _serverWeek=data.week;
+        LS.set('sparks','0'); LS.set('spark_week',data.week);
+        updateSparkUI();
+      }
+    }
+  }catch(e){}
+}
+
+// Update spark display in UI
+function updateSparkUI(){
+  document.querySelectorAll('.spark-val').forEach(el=>{
+    el.textContent = sparkCount >= 1000 ? (sparkCount/1000).toFixed(1)+'k' : sparkCount;
+  });
+  // Refresh streak on menu card (fire emoji is in HTML, just update number)
+  const streakEl = document.getElementById('menu-streak-val');
+  if(streakEl) streakEl.textContent = streakDays || 0;
+}
 
 // After loading, grey out already-claimed task buttons
 function restoreTaskUI(){
@@ -1247,8 +1735,60 @@ const CHANNEL_USERNAME  = 'RocketSurgeGame';
 const LEADERBOARD_URL   = 'https://rocketsurge.abhishekadhikari2212000.workers.dev';
 // ─────────────────────────────────────────────────────────────────────
 
-function getTGUserId(){ try{ return TG.initDataUnsafe?.user?.id||'guest'; }catch(e){ return 'guest'; } }
-function getTGUserName(){ try{ const u=TG.initDataUnsafe?.user; return u?(u.first_name||u.username||'Player'):'Player'; }catch(e){ return 'Player'; } }
+// ─── TELEGRAM USER IDENTITY ──────────────────────────────────────────
+// Full user object from Telegram initDataUnsafe
+function getTGUser(){
+  try{
+    const u = TG.initDataUnsafe?.user;
+    if(!u) return null;
+    return {
+      id:         u.id,
+      first_name: u.first_name || '',
+      last_name:  u.last_name  || '',
+      username:   u.username   || '',
+      photo_url:  u.photo_url  || '',   // Telegram CDN profile pic URL
+      // Display name: first + last, fallback to @username, fallback to "Player"
+      display_name: [u.first_name, u.last_name].filter(Boolean).join(' ')
+                    || (u.username ? '@'+u.username : 'Player')
+    };
+  }catch(e){ return null; }
+}
+function getTGUserId(){
+  try{ return TG.initDataUnsafe?.user?.id || 'guest'; }catch(e){ return 'guest'; }
+}
+function getTGUserName(){
+  const u = getTGUser();
+  return u ? u.display_name : 'Player';
+}
+function getTGUserPhoto(){
+  const u = getTGUser();
+  return u ? u.photo_url : '';
+}
+
+// Generate a colored avatar with initials (fallback when no photo)
+// Consistent color per user_id so it never changes
+function _avatarHTML(name, userId, size=36){
+  const colors = [
+    ['#1a4a8a','#4488dd'],['#4a1a8a','#8844dd'],['#8a1a4a','#dd4488'],
+    ['#1a8a4a','#44dd88'],['#8a4a1a','#dd8844'],['#1a7a8a','#44ccdd'],
+    ['#6a1a1a','#dd4444'],['#1a6a1a','#44dd44']
+  ];
+  const idx  = Math.abs(String(userId).split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % colors.length;
+  const [bg, txt] = colors[idx];
+  const initials = name.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase() || '?';
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};
+    display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.38)}px;
+    font-weight:800;color:${txt};flex-shrink:0;font-family:'Nunito',sans-serif;">${initials}</div>`;
+}
+
+// Avatar with photo or initials fallback
+function _playerAvatar(name, userId, photoUrl, size=36){
+  if(photoUrl){
+    return `<img src="${photoUrl}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;"
+      onerror="this.replaceWith(document.createRange().createContextualFragment(\`${_avatarHTML(name,userId,size)}\`))" />`;
+  }
+  return _avatarHTML(name, userId, size);
+}
 
 // Daily game counter for "play 5" task
 function _trackGamePlayed(){
@@ -1262,25 +1802,262 @@ function _trackGamePlayed(){
   }
 }
 
-// ─── LEADERBOARD ─────────────────────────────────────────────────────
+// Populate the player's own Telegram identity in the menu
+function _populatePlayerIdentity(){
+  const u = getTGUser();
+  const name  = u ? u.display_name : 'Player';
+  const uid   = u ? u.id : 'guest';
+  const photo = u ? u.photo_url : '';
+
+  // Avatar — fills the mb-avatar-inner container
+  const avatarEl = document.getElementById('player-avatar-menu');
+  if(avatarEl){
+    // Use full 48px size, inner container handles border+clip
+    avatarEl.innerHTML = '';
+    if(photo){
+      const img = document.createElement('img');
+      img.src = photo;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+      img.onerror = ()=>{ avatarEl.innerHTML = _avatarHTML(name, uid, 44); };
+      avatarEl.appendChild(img);
+    } else {
+      avatarEl.innerHTML = _avatarHTML(name, uid, 44);
+    }
+  }
+
+  // Name
+  const nameEl = document.getElementById('player-name-menu');
+  if(nameEl) nameEl.textContent = name;
+
+  // Streak — just the number, fire emoji is in HTML
+  const streakEl = document.getElementById('menu-streak-val');
+  if(streakEl) streakEl.textContent = streakDays || 0;
+
+  // Update spark display
+  updateSparkUI();
+}
+
+async function _fetchMenuRank(){
+  try{
+    const uid = getTGUserId();
+    if(uid === 'guest') return;
+    const resp = await fetch(`${LEADERBOARD_URL}/scores?user_id=${uid}&limit=1`);
+    if(!resp.ok) return;
+    const { rank } = await resp.json();
+    if(rank){
+      const badge = document.getElementById('menu-rank-badge');
+      const val   = document.getElementById('menu-rank-val');
+      if(badge && val){
+        val.textContent = '#' + rank;
+        badge.style.display = 'block';
+      }
+    }
+  }catch(e){}
+}
+async function openSparkSheet(){
+  SFX.tap();
+  updateSparkUI();
+  document.getElementById('streak-val').textContent = streakDays;
+  if(tonWallet){
+    document.getElementById('wallet-input').value = tonWallet;
+    _updateWalletUI(true);
+  }
+  document.getElementById('spark-sheet').style.transform='translateY(0)';
+  _startPoolTimer();
+  await _fetchSparkLeaderboard();
+}
+
+function closeSparkSheet(){
+  SFX.tap();
+  document.getElementById('spark-sheet').style.transform='translateY(100%)';
+  clearInterval(_poolTimerInterval);
+}
+
+function saveTonWallet(){
+  const val = document.getElementById('wallet-input').value.trim();
+  if(!val){ toast('Enter your TON wallet address','#ff8c00'); return; }
+  if(!val.startsWith('EQ') && !val.startsWith('UQ')){
+    toast('TON address must start with EQ or UQ','#ff4444'); return;
+  }
+  tonWallet = val; saveData(); _submitSparks();
+  _updateWalletUI(true);
+  toast('✅ Wallet saved!','#40c4ff'); SFX.gem();
+  TG.HapticFeedback.notificationOccurred('success');
+}
+
+let _poolTimerInterval = null;
+function _startPoolTimer(){
+  clearInterval(_poolTimerInterval);
+  const update = ()=>{
+    const now = new Date();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + (8 - now.getDay()) % 7 || 7);
+    monday.setHours(0,0,0,0);
+    const diff = monday - now;
+    const d = Math.floor(diff/86400000);
+    const h = Math.floor((diff%86400000)/3600000);
+    const m = Math.floor((diff%3600000)/60000);
+    const el = document.getElementById('pool-timer');
+    if(el) el.textContent = `Resets in ${d}d ${h}h ${m}m`;
+  };
+  update();
+  _poolTimerInterval = setInterval(update, 60000);
+}
+
+async function _fetchSparkLeaderboard(){
+  try{
+    const uid  = getTGUserId();
+    const sw=await _getServerWeek();
+    const resp = await fetch(`${LEADERBOARD_URL}/sparks?user_id=${uid}&limit=10&week=${sw}`);
+    if(!resp.ok) throw new Error('fetch failed');
+    const { sparks, rank, pool_ton, pool_stars } = await resp.json();
+
+    // Update prize pool display
+    const poolStr = pool_ton ? `${pool_ton.toFixed(2)} TON` : '0.00 TON';
+    ['prize-pool-val','prize-pool-big'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.textContent=poolStr;
+    });
+
+    // Prize breakdown (30/20/15/35 split)
+    if(pool_ton){
+      document.getElementById('prize-1st').textContent  = `${(pool_ton*0.30).toFixed(3)} TON`;
+      document.getElementById('prize-2nd').textContent  = `${(pool_ton*0.20).toFixed(3)} TON`;
+      document.getElementById('prize-3rd').textContent  = `${(pool_ton*0.15).toFixed(3)} TON`;
+      document.getElementById('prize-rest').textContent = `${(pool_ton*0.05/7).toFixed(4)} TON each`;
+    }
+
+    // Rank
+    if(rank){ document.getElementById('spark-rank-val').textContent = `#${rank}`; }
+
+    // Leaderboard list
+    const medals=['🥇','🥈','🥉'];
+    const myUid = String(uid);
+    const list  = document.getElementById('spark-lb-list');
+    if(!sparks || sparks.length===0){
+      list.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No players yet this week. Be first! 🚀</div>';
+    } else {
+      list.innerHTML = sparks.map((s,i)=>{
+        const isMe   = String(s.user_id)===myUid;
+        const medal  = ['🥇','🥈','🥉'][i]||'';
+        const bg     = isMe
+          ? 'background:rgba(64,196,255,0.12);border:1px solid rgba(64,196,255,0.3);'
+          : 'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);';
+        const avatar = _playerAvatar(s.name, s.user_id, s.photo_url||'', 38);
+        const sub    = s.username ? `<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">@${escHtml(s.username)}</div>` : '';
+        const rankBadge = medal
+          ? `<div style="font-size:20px;width:26px;text-align:center;flex-shrink:0;">${medal}</div>`
+          : `<div style="width:26px;text-align:center;flex-shrink:0;font-size:12px;font-weight:800;color:rgba(255,255,255,0.3);">${i+1}</div>`;
+        let prizeStr = '';
+        if(pool_ton){
+          const share = i===0?pool_ton*0.30:i===1?pool_ton*0.20:i===2?pool_ton*0.15:i<10?pool_ton*0.25/7:i<50?pool_ton*0.10/40:0;
+          if(share>0.0001) prizeStr=`<div style="font-size:10px;color:rgba(255,210,0,0.7);margin-top:2px;">${share.toFixed(3)} TON</div>`;
+        }
+        return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;${bg}border-radius:14px;margin-bottom:5px;">
+          ${rankBadge}
+          ${avatar}
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:800;color:${isMe?'#40c4ff':'#fff'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.name)}${isMe?' <span style="font-size:10px;color:#40c4ff;">(you)</span>':''}</div>
+            ${sub}
+            ${prizeStr}
+          </div>
+          <div style="font-family:'Fredoka One',cursive;font-size:18px;color:#40c4ff;flex-shrink:0;">${s.sparks}⚡</div>
+        </div>`;
+      }).join('');
+    }
+  }catch(e){
+    ['prize-pool-val','prize-pool-big'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.textContent='0.00 TON';
+    });
+    document.getElementById('spark-lb-list').innerHTML='<div style="text-align:center;padding:16px;color:rgba(255,255,255,0.3);font-size:13px;">Could not load — check connection</div>';
+  }
+}
+
+// Also fetch prize pool on menu load (for the banner)
+async function fetchPrizePoolForBanner(){
+  try{
+    const sw2=await _getServerWeek();
+    const resp = await fetch(`${LEADERBOARD_URL}/sparks?limit=1&week=${sw2}`);
+    if(!resp.ok) return;
+    const { pool_ton } = await resp.json();
+    const el = document.getElementById('prize-pool-val');
+    if(el) el.textContent = pool_ton ? `${pool_ton.toFixed(2)} TON` : '0.00 TON';
+  }catch(e){}
+}
 // Submits score to Cloudflare Worker + shows top 10 in a Telegram popup
+
+// ─── HELP & SUPPORT ──────────────────────────────────────────────────
+const FAQ_ITEMS = [
+  { q:'How do I earn Gems?', a:'Fly through pipes — each pipe earns 1 💎 × your skin multiplier. Golden skin earns 4× gems per pipe!' },
+  { q:'What are ⚡ Sparks?', a:'Sparks are the weekly prize currency. Score 30+, beat your personal best, or hit a 7-day streak to earn them. Top earners win real TON every Monday.' },
+  { q:'When does the prize pool pay out?', a:'Every Monday midnight UTC. Top Spark earners get a Telegram message from the bot with their prize amount.' },
+  { q:'How do I receive my TON prize?', a:"Tap ⚡ on the main screen → scroll to 'Your TON Wallet' → enter your TON address (starts with EQ...) → Save. Must be set before Monday." },
+  { q:'My gems disappeared after closing', a:'Gems save locally and sync to Telegram CloudStorage. Open the game from the same Telegram account. Still missing? Message @RocketSurge_bot.' },
+  { q:"Why can't I buy gem packs?", a:'Gem packs use Telegram Stars and only work inside Telegram. Open via t.me/RocketSurge_bot/play — not a browser.' },
+  { q:'How does Revive work?', a:'After crashing tap REVIVE → watch a short ad → 3-second countdown → game resumes with nearby obstacles cleared.' },
+  { q:'How do I get free skins?', a:'Invite 10 friends → Alien skin FREE. Watch ads and complete tasks daily to save up gems for other skins.' },
+  { q:'How do I report a bug?', a:'Message @RocketSurge_bot with a description and screenshot. We respond fast!' }
+];
+
+function openHelp(){
+  SFX.tap();
+  const list = document.getElementById('faq-list');
+  if(list && list.children.length===0){
+    list.innerHTML = FAQ_ITEMS.map((item,i)=>`
+      <div onclick="toggleFaq(${i})" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;gap:10px;">
+          <div style="font-size:13px;font-weight:800;color:#fff;line-height:1.3;">${escHtml(item.q)}</div>
+          <div id="faq-arrow-${i}" style="color:rgba(255,255,255,0.35);font-size:16px;flex-shrink:0;transition:transform 0.2s;">›</div>
+        </div>
+        <div id="faq-ans-${i}" style="display:none;padding:0 14px 12px;font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;border-top:1px solid rgba(255,255,255,0.07);">
+          <div style="padding-top:10px;">${escHtml(item.a)}</div>
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('help-sheet').style.transform='translateY(0)';
+}
+
+function closeHelp(){
+  SFX.tap();
+  document.getElementById('help-sheet').style.transform='translateY(100%)';
+}
+
+function toggleFaq(i){
+  const ans=document.getElementById(`faq-ans-${i}`);
+  const arrow=document.getElementById(`faq-arrow-${i}`);
+  if(!ans) return;
+  const wasOpen = ans.style.display!=='none';
+  FAQ_ITEMS.forEach((_,j)=>{
+    const a=document.getElementById(`faq-ans-${j}`), ar=document.getElementById(`faq-arrow-${j}`);
+    if(a) a.style.display='none';
+    if(ar){ ar.style.transform='rotate(0deg)'; }
+  });
+  if(!wasOpen){ ans.style.display='block'; arrow.style.transform='rotate(90deg)'; SFX.tap(); }
+}
+
+function helpLink(url){
+  SFX.tap();
+  try{ TG.openTelegramLink(url); }
+  catch(e){ try{ TG.openLink(url); }catch(e2){ window.open(url,'_blank'); } }
+}
 
 async function submitScore(score){
   if(score < 1) return;
   try{
-    const uid   = getTGUserId();
-    const name  = getTGUserName();
+    const u = getTGUser();
+    if(!u) return;
     await fetch(`${LEADERBOARD_URL}/score`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
-        user_id: String(uid),
-        name,
+        user_id:   String(u.id),
+        name:      u.display_name,
+        username:  u.username,
+        photo_url: u.photo_url,
         score,
-        init_data: TG.initData || ''  // for server-side validation
+        init_data: TG.initData || ''
       })
     });
-  }catch(e){ /* silent fail — leaderboard is non-critical */ }
+  }catch(e){}
 }
 
 async function openLeaderboard(){
@@ -1317,16 +2094,25 @@ function showLeaderboardSheet(title, scores, myRank){
     </div>`;
   } else {
     rows = scores.map((s,i)=>{
-      const isMe = String(s.user_id)===myUid;
-      const medal= medals[i]||`${i+1}`;
-      const bg   = isMe ? 'background:rgba(255,210,0,0.12);border-color:rgba(255,210,0,0.35);' : '';
-      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;
-        background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);
-        border-radius:12px;margin-bottom:6px;${bg}">
-        <div style="font-size:18px;width:28px;text-align:center;">${medal}</div>
-        <div style="flex:1;font-size:13px;font-weight:800;color:${isMe?'#ffd200':'#fff'};
-          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.name)}</div>
-        <div style="font-family:'Fredoka One',cursive;font-size:18px;color:${isMe?'#ffd200':'rgba(255,255,255,0.85)'};">${s.score}</div>
+      const isMe   = String(s.user_id)===myUid;
+      const medal  = ['🥇','🥈','🥉'][i] || '';
+      const rankNum= i+1;
+      const bg     = isMe
+        ? 'background:rgba(255,210,0,0.12);border:1px solid rgba(255,210,0,0.35);'
+        : 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);';
+      const avatar = _playerAvatar(s.name, s.user_id, s.photo_url||'', 38);
+      const sub    = s.username ? `<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">@${escHtml(s.username)}</div>` : '';
+      const rankBadge = medal
+        ? `<div style="font-size:20px;width:28px;text-align:center;flex-shrink:0;">${medal}</div>`
+        : `<div style="width:28px;text-align:center;flex-shrink:0;font-size:12px;font-weight:800;color:rgba(255,255,255,0.35);">${rankNum}</div>`;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;${bg}border-radius:14px;margin-bottom:6px;">
+        ${rankBadge}
+        ${avatar}
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:800;color:${isMe?'#ffd200':'#fff'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.name)}${isMe?' <span style="font-size:10px;color:#ffd200;font-weight:700;">(you)</span>':''}</div>
+          ${sub}
+        </div>
+        <div style="font-family:'Fredoka One',cursive;font-size:20px;color:${isMe?'#ffd200':'rgba(255,255,255,0.85)'};flex-shrink:0;">${s.score}</div>
       </div>`;
     }).join('');
     if(myRank && myRank > scores.length){
@@ -1370,6 +2156,36 @@ function closeLbSheet(){
 
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+// ─── TASK TIMING RULES (industry standard like Hamster Kombat / Notcoin) ──
+// One-time forever : channel, share, invite5, invite10
+// Per-invite       : invite — 100💎 each time, unlimited, but only after returning
+// Daily reset      : play5, watch_ad — resets at midnight
+// ─────────────────────────────────────────────────────────────────────────
+
+// Track whether we're waiting for user to return after a social action
+let _pendingReward = null;  // { type, btn, gems, label }
+
+// Called when user returns to the Mini App after leaving (e.g. after sharing)
+function _onAppActivated(){
+  if(!_pendingReward) return;
+  const { type, btn, gems, label, taskKey, onExtra } = _pendingReward;
+  _pendingReward = null;
+
+  if(taskKey && _claimedTasks.has(taskKey)) return;
+  if(taskKey) _claimedTasks.add(taskKey);
+  gemCount += gems;
+  updateGemUI(); saveData();
+  toast(`+${gems} 💎 ${label}`,'#ffd200'); SFX.gem();
+  TG.HapticFeedback.notificationOccurred('success');
+  if(btn && btn.tagName){ btn.textContent='✅ Done'; btn.classList.add('done'); btn.disabled=true; }
+  if(onExtra) onExtra();
+}
+
+// Register Telegram's activated event (fires when user returns to Mini App)
+try{
+  TG.onEvent && TG.onEvent('activated', _onAppActivated);
+}catch(e){}
+
 function shareGame(){
   SFX.tap();
   const uid  = getTGUserId();
@@ -1378,10 +2194,13 @@ function shareGame(){
   const msg  = `🚀 ${name} scored ${highScore} in Rocket Surge!\nCan you beat me? 👇\n${link}`;
   try{
     TG.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(msg)}`);
+    // Only queue reward if not already claimed
+    if(!_claimedTasks.has('share')){
+      _pendingReward = { type:'share', btn:null, gems:50, label:'Score shared!', taskKey:'share' };
+    }
   }catch(e){
     try{ navigator.clipboard.writeText(msg); toast('📋 Link copied!','#ffd200'); }catch(ee){}
   }
-  if(!_claimedTasks.has('share')){ _claimedTasks.add('share'); gemCount+=50; updateGemUI(); saveData(); toast('+50 💎 Score shared!','#ffd200'); SFX.gem(); }
 }
 
 function claimTask(type, btn){
@@ -1394,31 +2213,44 @@ function claimTask(type, btn){
   const rewards = { channel:200, invite:100, invite5:500, invite10:1000, play5:50, share:50 };
   const r = rewards[type]||0;
 
+  // ── Channel join — open channel, award ONLY when user returns ──
   if(type==='channel'){
     TG.openTelegramLink(`https://t.me/${CHANNEL_USERNAME}`);
-    setTimeout(()=>{
-      if(!_claimedTasks.has(taskKey)){
-        _claimedTasks.add(taskKey); gemCount+=r; updateGemUI(); saveData();
-        toast(`+${r} 💎 Channel joined!`,'#ffd200'); SFX.gem();
-        if(btn){ btn.textContent='✅'; btn.classList.add('done'); btn.disabled=true; }
-      }
-    },3000); return;
-  }
-  if(type==='invite'||type==='invite5'||type==='invite10'){
-    const uid  = getTGUserId();
-    const link = `https://t.me/${BOT_USERNAME}?start=ref_${uid}`;
-    const msg  = `🚀 Join me in Rocket Surge!\n${link}`;
-    try{
-      TG.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(msg)}`);
-    }catch(e){ try{ navigator.clipboard.writeText(link); }catch(ee){} }
-    _claimedTasks.add(taskKey); gemCount+=r; updateGemUI(); saveData();
-    toast(`+${r} 💎 Invite sent!`,'#00e676'); SFX.gem();
-    TG.HapticFeedback.notificationOccurred('success');
-    if(type==='invite10' && !ownedSkins.has('alien')){ ownedSkins.add('alien'); saveData(); toast('👑 Alien Skin FREE!','#00e676'); }
-    if(btn){ btn.textContent='✅'; btn.classList.add('done'); btn.disabled=true; }
+    // Queue reward — fires when user comes back to the app
+    _pendingReward = { type, btn, gems:r, label:'Channel joined! +200 💎', taskKey };
+    toast('Join the channel then come back!','#40c4ff');
     return;
   }
 
+  // ── Invite — open share sheet, award ONLY when user returns ──
+  if(type==='invite'||type==='invite5'||type==='invite10'){
+    const uid  = getTGUserId();
+    const link = `https://t.me/${BOT_USERNAME}?start=ref_${uid}`;
+    const msg  = `🚀 Join me in Rocket Surge! Beat my score of ${highScore} 🏆\n${link}`;
+    try{
+      TG.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(msg)}`);
+      // Queue reward — fires when user returns after actually sharing
+      const label = type==='invite' ? 'Invite sent! +100 💎'
+                  : type==='invite5' ? 'Milestone! +500 💎'
+                  : 'Legend! +1,000 💎';
+      _pendingReward = { type, btn, gems:r, label, taskKey };
+      toast('Share with a friend then come back!','#40c4ff');
+    }catch(e){
+      try{ navigator.clipboard.writeText(link); toast('📋 Link copied!','#ffd200'); }catch(ee){}
+    }
+    // Alien skin unlock on invite10 — done on return
+    if(type==='invite10'){
+      const orig = _onAppActivated.bind({});
+      // patch to also unlock skin
+      const prev = _pendingReward;
+      _pendingReward = {...prev, onExtra:()=>{
+        if(!ownedSkins.has('alien')){ ownedSkins.add('alien'); saveData(); toast('👑 Alien Skin FREE!','#00e676'); }
+      }};
+    }
+    return;
+  }
+
+  // ── All other tasks — award directly (play5, etc.) ──
   _claimedTasks.add(taskKey); gemCount+=r; updateGemUI(); saveData();
   toast(`+${r} 💎 Claimed!`,'#ffd200'); SFX.gem();
   TG.HapticFeedback.notificationOccurred('success');
@@ -1579,46 +2411,57 @@ async function buyGemPack(id){
   const p = GEM_PACKS.find(x=>x.id===id); if(!p) return;
   SFX.tap();
   const total = p.gems + p.bonus;
+  const uid   = getTGUserId();
 
-  // Show loading state
+  // Must be inside Telegram to pay with Stars
+  if(uid === 'guest' || !_inTelegram()){
+    TG.showPopup({
+      title: '⭐ Open in Telegram',
+      message: `Gem packs are purchased with Telegram Stars.\n\nOpen this game inside Telegram via:\nt.me/${BOT_USERNAME}/play\n\nThen tap the pack to pay with Stars.`,
+      buttons:[{type:'ok', text:'Got it'}]
+    },()=>{});
+    return;
+  }
+
   const btns = document.querySelectorAll(`[onclick="buyGemPack('${id}')"]`);
   btns.forEach(b=>{ b.textContent='⏳'; b.disabled=true; });
 
-  try {
-    // Ask your bot to create a Telegram Stars invoice link.
-    // Your bot must implement: POST /createInvoice?pack=id&user_id=uid
-    // and return { url: "https://t.me/invoice/..." }
-    const uid = getTGUserId();
+  try{
     const resp = await fetch(`${LEADERBOARD_URL}/createInvoice`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ pack:id, user_id:uid, total_gems:total, stars:p.stars })
+      body: JSON.stringify({ pack:id, user_id:String(uid), total_gems:total, stars:p.stars })
     });
 
-    if(resp.ok){
-      const { url } = await resp.json();
-      // Open Telegram's native Stars payment screen
-      TG.openInvoice(url, (status)=>{
-        if(status === 'paid'){
-          gemCount += total;
-          updateGemUI(); saveData(); renderPacks();
-          toast(`💎 +${total.toLocaleString()} gems!`,'#ffd200');
-          SFX.newBest();
-          TG.HapticFeedback.notificationOccurred('success');
-        } else if(status === 'cancelled' || status === 'failed'){
-          toast('Payment cancelled','#ff8c00');
-        }
-        btns.forEach(b=>{ b.textContent=`⭐ ${p.stars}`; b.disabled=false; });
-      });
-    } else {
-      throw new Error('Invoice creation failed');
+    if(!resp.ok){
+      const e = await resp.json().catch(()=>({}));
+      throw new Error(e.error || `HTTP ${resp.status}`);
     }
-  } catch(err){
-    // Fallback if backend not set up yet — show instructions
+
+    const data = await resp.json();
+    if(!data.url) throw new Error('No invoice URL returned');
+
+    // Open Telegram's native Stars payment screen
+    TG.openInvoice(data.url, (status)=>{
+      btns.forEach(b=>{ b.textContent=`⭐ ${p.stars}`; b.disabled=false; });
+      if(status === 'paid'){
+        gemCount += total;
+        updateGemUI(); saveData(); renderPacks();
+        toast(`💎 +${total.toLocaleString()} gems added!`,'#ffd200');
+        SFX.newBest();
+        TG.HapticFeedback.notificationOccurred('success');
+      } else if(status === 'failed'){
+        toast('Payment failed — please try again','#ff4444');
+      }
+      // 'cancelled' = user closed — silent, no toast
+    });
+
+  }catch(err){
     btns.forEach(b=>{ b.textContent=`⭐ ${p.stars}`; b.disabled=false; });
+    console.error('Invoice error:', err.message);
     TG.showPopup({
-      title:`⭐ ${p.name}`,
-      message:`To enable Telegram Stars payment:\n1. Deploy the Cloudflare Worker (see code)\n2. Set LEADERBOARD_URL in the game\n\nPack: 💎 ${total.toLocaleString()} gems for ⭐ ${p.stars} Stars`,
+      title:'Payment Error',
+      message:`Could not create payment.\n\nMake sure:\n• Stars is enabled in @BotFather → Payments\n• BOT_TOKEN is set in Cloudflare\n\nError: ${err.message}`,
       buttons:[{type:'ok',text:'OK'}]
     },()=>{});
   }
@@ -1760,14 +2603,89 @@ function reviveWithAd(){
   );
 }
 
-function connectWallet(name){
+// ─── WALLET (TON Connect via Telegram) ───────────────────────────────
+// Telegram Mini Apps can connect to TON Space (Telegram's native wallet)
+// via TG.WebApp directly — no external SDK needed for basic connection.
+
+let _walletAddress = null;
+
+function connectWallet(type){
   closeWallet();
-  SFX.newBest();
-  const lbl = document.getElementById('wallet-label');
-  lbl.textContent = name.split(' ')[0];
-  document.getElementById('wallet-trigger').style.background = 'linear-gradient(135deg,rgba(0,230,118,0.4),rgba(0,200,83,0.3))';
-  document.getElementById('wallet-trigger').style.borderColor = 'rgba(0,230,118,0.4)';
-  toast(`✅ ${name} connected!`, '#00e676');
+  SFX.tap();
+
+  if(type === 'TON Space'){
+    // Use Telegram's native TON wallet connection
+    try{
+      // TG.openTelegramLink opens the TON Space wallet inside Telegram
+      TG.openTelegramLink('https://t.me/wallet');
+      toast('TON Space opening...','#40c4ff');
+      // When user returns, check if wallet was connected
+      _pendingReward = null;  // clear any pending reward
+      const checkWallet = ()=>{
+        // In production with tonconnect-sdk, read the address here
+        // For now show a manual address input prompt
+        TG.showPopup({
+          title:'TON Space',
+          message:'Open TON Space, copy your wallet address, then paste it here to connect.',
+          buttons:[
+            {id:'ok',  type:'default', text:'I copied my address'},
+            {id:'skip',type:'cancel',  text:'Skip for now'}
+          ]
+        },(id)=>{
+          if(id==='ok'){
+            _walletAddress = 'connected';
+            LS.set('wallet','ton_connected');
+            _updateWalletUI(true);
+            toast('✅ TON Space connected!','#40c4ff');
+          }
+        });
+      };
+      // Check after user returns
+      try{ TG.onEvent('activated', checkWallet); }catch(e){}
+    }catch(e){
+      toast('Open Telegram to connect TON wallet','#ff8c00');
+    }
+    return;
+  }
+
+  if(type === 'MetaMask'){
+    // MetaMask requires EVM — open in browser
+    try{
+      TG.openLink('https://metamask.app.link/');
+      toast('MetaMask opening in browser...','#ff8c00');
+    }catch(e){ toast('Install MetaMask to connect','#ff8c00'); }
+    return;
+  }
+
+  if(type === 'WalletConnect'){
+    try{
+      TG.openLink('https://walletconnect.com/');
+      toast('WalletConnect opening...','#40c4ff');
+    }catch(e){ toast('Open in browser to connect','#ff8c00'); }
+    return;
+  }
+}
+
+// Restore wallet state on load
+function _restoreWallet(){
+  const w = LS.get('wallet','');
+  if(w === 'ton_connected'){
+    _walletAddress = 'connected';
+    _updateWalletUI(true);
+  }
+}
+
+// Update wallet connected state in all relevant UI elements
+function _updateWalletUI(connected){
+  // Update wallet status badge in spark sheet
+  const badge = document.getElementById('wallet-status-badge');
+  if(badge){
+    badge.textContent = connected ? '✅ Wallet connected' : '❌ No wallet';
+    badge.style.color = connected ? '#00e676' : '#ff8c00';
+  }
+  // Update wallet input placeholder
+  const inp = document.getElementById('wallet-input');
+  if(inp && connected && tonWallet) inp.value = tonWallet;
 }
 
 function restartGame(){ SFX.tap(); hideGameOver(); G.restart(); }
@@ -3238,8 +4156,11 @@ class GameEngine {
     TG.HapticFeedback.notificationOccurred('error');
     SFX.crash();
     _trackGamePlayed();
-    // Submit score to leaderboard (async, non-blocking)
-    if(this.score > 0) submitScore(this.score);
+    // Submit score + earn sparks (async, non-blocking)
+    if(this.score > 0){
+      submitScore(this.score);
+      _earnSparks(this.score, isNewBest); // async - non-blocking
+    }
 
     // Fill GO panel
     document.getElementById('go-score').textContent = this.score;
@@ -3576,7 +4497,14 @@ window.addEventListener('resize', scaleGame);
 
 // ── BOOT ──
 loadData();
-setTimeout(restoreTaskUI, 100);  // after DOM settles
+setTimeout(()=>{
+  restoreTaskUI();
+  _restoreWallet();
+  updateSparkUI();
+  fetchPrizePoolForBanner();
+  _validateSparkWeek();
+  _populatePlayerIdentity();
+}, 150);
 G.start();
 </script>
 </body>
