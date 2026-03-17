@@ -4,8 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Rocket Surge</title>
-<!-- Telegram Mini App SDK — REQUIRED for TG.initDataUnsafe, HapticFeedback, CloudStorage etc -->
+<!-- Telegram Mini App SDK -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<!-- TON Connect UI — required for Telegram Apps Center compliance -->
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js" crossorigin="anonymous"></script>
+<!-- Telegram Mini Apps Analytics SDK -->
+<script src="https://tganalytics.xyz/index.js" async id="tg-analytics"></script>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -884,25 +888,30 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
     <div class="wallet-sheet">
       <div class="ws-handle"></div>
       <div class="ws-header">
-        <div class="ws-title">🔗 Connect Wallet</div>
-        <div class="ws-sub">Choose your wallet to continue</div>
+        <div class="ws-title">💎 Connect TON Wallet</div>
+        <div class="ws-sub">Connect your TON wallet to receive prizes</div>
       </div>
+      <!-- TON Connect UI mounts here -->
+      <div id="ton-connect-button" style="display:flex;justify-content:center;padding:8px 0 4px;"></div>
       <div class="wallet-options">
-        <div class="w-opt" onclick="connectWallet('TON Space')">
+        <div class="w-opt" onclick="connectWallet('Tonkeeper')">
           <span class="w-ico">💎</span>
+          <div class="w-info"><div class="w-name">Tonkeeper</div><div class="w-desc">Most popular TON wallet</div></div>
+          <span class="w-arrow">›</span>
+        </div>
+        <div class="w-opt" onclick="connectWallet('TON Space')">
+          <span class="w-ico">✈️</span>
           <div class="w-info"><div class="w-name">TON Space</div><div class="w-desc">Official Telegram Wallet</div></div>
           <span class="w-arrow">›</span>
         </div>
-        <div class="w-opt" onclick="connectWallet('MetaMask')">
-          <span class="w-ico">🦊</span>
-          <div class="w-info"><div class="w-name">MetaMask</div><div class="w-desc">Most popular EVM wallet</div></div>
+        <div class="w-opt" onclick="connectWallet('MyTonWallet')">
+          <span class="w-ico">🔷</span>
+          <div class="w-info"><div class="w-name">MyTonWallet</div><div class="w-desc">Simple & secure TON wallet</div></div>
           <span class="w-arrow">›</span>
         </div>
-        <div class="w-opt" onclick="connectWallet('WalletConnect')">
-          <span class="w-ico">🔵</span>
-          <div class="w-info"><div class="w-name">WalletConnect</div><div class="w-desc">300+ supported wallets</div></div>
-          <span class="w-arrow">›</span>
-        </div>
+      </div>
+      <div style="margin:8px 14px;padding:10px;background:rgba(0,136,204,0.1);border:1px solid rgba(0,136,204,0.25);border-radius:10px;font-size:11px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.5;">
+        🔒 TON Blockchain only. Your wallet address is used solely for prize payouts. We never access your funds.
       </div>
       <button class="ws-cancel" onclick="closeWallet()">Cancel</button>
     </div>
@@ -2761,90 +2770,77 @@ function reviveWithAd(){
   );
 }
 
-// ─── WALLET (TON Connect via Telegram) ───────────────────────────────
-// Telegram Mini Apps can connect to TON Space (Telegram's native wallet)
-// via TG.WebApp directly — no external SDK needed for basic connection.
-
+// ─── TON CONNECT (required for Telegram Apps Center) ─────────────────
+let _tonConnectUI = null;
 let _walletAddress = null;
 
+function _initTonConnect(){
+  try{
+    const TC = (typeof TON_CONNECT_UI !== 'undefined') ? TON_CONNECT_UI : (typeof TonConnectUI !== 'undefined' ? {TonConnectUI} : null);
+    if(!TC){ console.log('TON Connect SDK not loaded'); return; }
+    _tonConnectUI = new TC.TonConnectUI({
+      manifestUrl:'https://rocket-surge-82t5.vercel.app/tonconnect-manifest.json',
+      buttonRootId:'ton-connect-button'
+    });
+    _tonConnectUI.onStatusChange(wallet=>{
+      if(wallet){
+        _walletAddress = wallet.account.address;
+        tonWallet = _walletAddress;
+        saveData(); _updateWalletUI(true); closeWallet();
+        const inp=document.getElementById('wallet-input'); if(inp) inp.value=_walletAddress;
+        toast('✅ TON wallet connected!','#40c4ff'); SFX.gem();
+        TG.HapticFeedback.notificationOccurred('success');
+        _trackEvent('wallet_connected',{wallet:wallet.device?.appName||'unknown'});
+      } else {
+        _walletAddress=null; tonWallet=''; saveData(); _updateWalletUI(false);
+      }
+    });
+    if(_tonConnectUI.wallet){ _walletAddress=_tonConnectUI.wallet.account.address; tonWallet=_walletAddress; _updateWalletUI(true); }
+  }catch(e){ console.log('TON Connect init:',e); }
+}
+
 function connectWallet(type){
-  closeWallet();
   SFX.tap();
-
-  if(type === 'TON Space'){
-    // Use Telegram's native TON wallet connection
-    try{
-      // TG.openTelegramLink opens the TON Space wallet inside Telegram
-      TG.openTelegramLink('https://t.me/wallet');
-      toast('TON Space opening...','#40c4ff');
-      // When user returns, check if wallet was connected
-      _pendingReward = null;  // clear any pending reward
-      const checkWallet = ()=>{
-        // In production with tonconnect-sdk, read the address here
-        // For now show a manual address input prompt
-        TG.showPopup({
-          title:'TON Space',
-          message:'Open TON Space, copy your wallet address, then paste it here to connect.',
-          buttons:[
-            {id:'ok',  type:'default', text:'I copied my address'},
-            {id:'skip',type:'cancel',  text:'Skip for now'}
-          ]
-        },(id)=>{
-          if(id==='ok'){
-            _walletAddress = 'connected';
-            LS.set('wallet','ton_connected');
-            _updateWalletUI(true);
-            toast('✅ TON Space connected!','#40c4ff');
-          }
-        });
-      };
-      // Check after user returns
-      try{ TG.onEvent('activated', checkWallet); }catch(e){}
-    }catch(e){
-      toast('Open Telegram to connect TON wallet','#ff8c00');
-    }
-    return;
-  }
-
-  if(type === 'MetaMask'){
-    // MetaMask requires EVM — open in browser
-    try{
-      TG.openLink('https://metamask.app.link/');
-      toast('MetaMask opening in browser...','#ff8c00');
-    }catch(e){ toast('Install MetaMask to connect','#ff8c00'); }
-    return;
-  }
-
-  if(type === 'WalletConnect'){
-    try{
-      TG.openLink('https://walletconnect.com/');
-      toast('WalletConnect opening...','#40c4ff');
-    }catch(e){ toast('Open in browser to connect','#ff8c00'); }
-    return;
-  }
+  if(_tonConnectUI){ _tonConnectUI.openModal(); closeWallet(); return; }
+  // Fallback: open wallet app directly
+  const urls={'Tonkeeper':'https://app.tonkeeper.com','TON Space':'https://t.me/wallet','MyTonWallet':'https://mytonwallet.io'};
+  try{ TG.openLink(urls[type]||'https://ton.org/wallets'); }catch(e){ window.open(urls[type]||'https://ton.org/wallets','_blank'); }
+  toast(`Opening ${type}…`,'#40c4ff');
+  setTimeout(()=>{ openSparkSheet(); toast('Paste your TON address below','#40c4ff'); }, 3000);
 }
 
-// Restore wallet state on load
+function disconnectWallet(){
+  try{ _tonConnectUI?.disconnect(); }catch(e){}
+  _walletAddress=null; tonWallet=''; saveData(); _updateWalletUI(false);
+  toast('Wallet disconnected','#ff8c00');
+}
+
 function _restoreWallet(){
-  const w = LS.get('wallet','');
-  if(w === 'ton_connected'){
-    _walletAddress = 'connected';
-    _updateWalletUI(true);
-  }
+  if(tonWallet) _updateWalletUI(true);
 }
 
-// Update wallet connected state in all relevant UI elements
 function _updateWalletUI(connected){
-  // Update wallet status badge in spark sheet
-  const badge = document.getElementById('wallet-status-badge');
-  if(badge){
-    badge.textContent = connected ? '✅ Wallet connected' : '❌ No wallet';
-    badge.style.color = connected ? '#00e676' : '#ff8c00';
-  }
-  // Update wallet input placeholder
-  const inp = document.getElementById('wallet-input');
-  if(inp && connected && tonWallet) inp.value = tonWallet;
+  const badge=document.getElementById('wallet-status-badge');
+  if(badge){ badge.textContent=connected?'✅ Wallet connected':'❌ No wallet'; badge.style.color=connected?'#00e676':'#ff8c00'; }
+  const inp=document.getElementById('wallet-input');
+  if(inp&&connected&&tonWallet) inp.value=tonWallet;
 }
+
+// ─── TELEGRAM MINI APPS ANALYTICS (required for Telegram Apps Center) ─
+function _initAnalytics(){
+  try{
+    const tga = window.telegramAnalytics;
+    if(tga){
+      tga.init({ token:'eyJhcHBfbmFtZSI6InJvY2tldF9zdXJnZSIsImFwcF91cmwiOiJodHRwczovL3QubWUvUm9ja2V0U3VyZ2VfYm90IiwiYXBwX2RvbWFpbiI6Imh0dHBzOi8vcm9ja2V0LXN1cmdlLnZlcmNlbC5hcHAvIn0=!kQlTYZWzmhb8sHfQ9FD2CpNK+YrSKT00SHWG731Q7RQ=', appName:'RocketSurge' });
+      _trackEvent('app_open',{platform:TG.platform||'unknown'});
+    }
+  }catch(e){}
+}
+
+function _trackEvent(event, params={}){
+  try{ if(window.telegramAnalytics) window.telegramAnalytics.track(event,params); }catch(e){}
+}
+
 
 function restartGame(){ SFX.tap(); hideGameOver(); G.restart(); }
 
@@ -4300,6 +4296,7 @@ class GameEngine {
       document.getElementById('ingame-mute').classList.add('show');
       document.getElementById('tap-layer').classList.add('active');
       SFX.startMusic();
+      _trackEvent('game_start', {skin: activeSkin, world: activeWorld});
       return;
     }
     if(this.state===ST_PLAYING){
@@ -4324,6 +4321,7 @@ class GameEngine {
     TG.HapticFeedback.notificationOccurred('error');
     SFX.crash();
     _trackGamePlayed();
+    _trackEvent('game_over', {score: this.score, skin: activeSkin, world: activeWorld, is_new_best: isNewBest});
     // Submit score + earn sparks (async, non-blocking)
     if(this.score > 0){
       submitScore(this.score);
@@ -4697,6 +4695,8 @@ setTimeout(()=>{
   fetchPrizePoolForBanner();
   _validateSparkWeek();
   _populatePlayerIdentity();
+  _initTonConnect();   // TON Connect SDK
+  _initAnalytics();    // Telegram Mini Apps Analytics
 }, 150);
 G.start();
 document.getElementById('nav-layer').classList.add('visible');
