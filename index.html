@@ -670,15 +670,6 @@ canvas#gc { display: block; width: 360px; height: 640px; }
       </div>
 
       <div class="task-card">
-        <span class="task-ico">𝕏</span>
-        <div class="task-info">
-          <div class="task-name">Follow on X (Twitter)</div>
-          <div class="task-rew">+100 💎 Gems</div>
-        </div>
-        <button class="task-do" onclick="claimTask('twitter',this)">GO →</button>
-      </div>
-
-      <div class="task-card">
         <span class="task-ico">💬</span>
         <div class="task-info">
           <div class="task-name">Share Your Score</div>
@@ -821,21 +812,44 @@ canvas#gc { display: block; width: 360px; height: 640px; }
 </div>
 
 <script>
-// ─── Telegram Shim ─────────────────────────────────────────────────
+// ─── Telegram Shim (browser fallback) ────────────────────────────────
 window.Telegram = window.Telegram || {
   WebApp: {
     ready(){}, expand(){},
+    platform: 'unknown',
+    initDataUnsafe: {},
     HapticFeedback: { impactOccurred(s){}, notificationOccurred(s){} },
     showPopup(o,cb){ cb&&cb('ok'); },
+    openTelegramLink(url){ window.open(url,'_blank'); },
+    openLink(url){ window.open(url,'_blank'); },
+    switchInlineQuery(q,t){},
+    openInvoice(url,cb){ cb&&cb('cancelled'); },
     CloudStorage: {
       _s:{},
       setItem(k,v,cb){ this._s[k]=v; cb&&cb(null,true); },
-      getItem(k,cb){ cb&&cb(null,this._s[k]||''); }
+      getItem(k,cb){ cb&&cb(null,this._s[k]||''); },
+      getItems(keys,cb){ const r={}; keys.forEach(k=>r[k]=this._s[k]||''); cb&&cb(null,r); }
     }
   }
 };
 const TG = window.Telegram.WebApp;
 TG.ready();
+TG.expand && TG.expand();  // always full-screen in Telegram
+
+// ─── Persistent Storage ───────────────────────────────────────────────
+// Uses localStorage as immediate read/write (survives app close/reopen).
+// Also syncs to TG.CloudStorage when inside Telegram (survives device changes).
+const LS = {
+  get(k, fallback=''){
+    try{ return localStorage.getItem('rs_'+k) ?? fallback; }
+    catch(e){ return fallback; }
+  },
+  set(k, v){
+    try{ localStorage.setItem('rs_'+k, v); }catch(e){}
+    // Async sync to TG CloudStorage (fire-and-forget)
+    try{ TG.CloudStorage.setItem(k, v, ()=>{}); }catch(e){}
+  }
+};
 
 // ─── SFX Engine (Web Audio API — no external files) ──────────────────
 const SFX = (() => {
@@ -1102,7 +1116,8 @@ let ownedSkins   = new Set(['barry']);
 let ownedWorlds  = new Set(['space']);
 let activeSkin   = 'barry';
 let activeWorld  = 'space';
-let adWatchCount = 0;      // how many ads watched today
+let adWatchCount = 0;
+let _claimedTasks = new Set();  // tracks which one-time tasks have been claimed
 const AD_GEM_REWARD = 30;
 const MAX_ADS_PER_DAY = 5;
 
@@ -1110,26 +1125,90 @@ function getCurWorld(){ return WORLDS.find(w=>w.id===activeWorld) || WORLDS[0]; 
 function getCurSkin(){  return SKINS.find(s=>s.id===activeSkin)   || SKINS[0];  }
 
 function loadData(){
-  TG.CloudStorage.getItem('hs',   (e,v)=>{ if(v){ highScore=parseInt(v)||0; document.getElementById('menu-best-val').textContent=highScore; }});
-  TG.CloudStorage.getItem('gems', (e,v)=>{ if(v){ gemCount=parseInt(v)||0; updateGemUI(); }});
-  TG.CloudStorage.getItem('skins',(e,v)=>{ if(v) try{ ownedSkins=new Set(JSON.parse(v)); }catch(e){} });
-  TG.CloudStorage.getItem('worlds',(e,v)=>{ if(v) try{ ownedWorlds=new Set(JSON.parse(v)); }catch(e){} });
-  TG.CloudStorage.getItem('askin',(e,v)=>{ if(v) activeSkin=v; });
-  TG.CloudStorage.getItem('aworld',(e,v)=>{ if(v) activeWorld=v; });
-  TG.CloudStorage.getItem('adct', (e,v)=>{ if(v){ const d=JSON.parse(v||'{}'); if(d.date===today()) adWatchCount=d.count||0; }});
+  // Load from localStorage immediately (synchronous — no flicker)
+  const hs   = LS.get('hs','0');
+  const gems = LS.get('gems','0');
+  const skins= LS.get('skins','["barry"]');
+  const worlds=LS.get('worlds','["space"]');
+  const askin= LS.get('askin','barry');
+  const aworld=LS.get('aworld','space');
+  const adct = LS.get('adct','{}');
+  const tasks= LS.get('tasks','{}');
+
+  highScore   = parseInt(hs)||0;
+  gemCount    = parseInt(gems)||0;
+  try{ ownedSkins  = new Set(JSON.parse(skins));  }catch(e){ ownedSkins=new Set(['barry']); }
+  try{ ownedWorlds = new Set(JSON.parse(worlds)); }catch(e){ ownedWorlds=new Set(['space']); }
+  activeSkin  = askin||'barry';
+  activeWorld = aworld||'space';
+  try{
+    const d=JSON.parse(adct);
+    if(d.date===today()) adWatchCount=d.count||0;
+  }catch(e){}
+  try{
+    _claimedTasks = new Set(JSON.parse(tasks));
+  }catch(e){ _claimedTasks=new Set(); }
+
+  document.getElementById('menu-best-val').textContent=highScore;
+  updateGemUI();
+
+  // Also try TG CloudStorage as secondary source (may have data from another device)
+  try{
+    TG.CloudStorage.getItem('hs',(e,v)=>{
+      if(v && parseInt(v)>highScore){ highScore=parseInt(v)||0; LS.set('hs',v); document.getElementById('menu-best-val').textContent=highScore; }
+    });
+    TG.CloudStorage.getItem('gems',(e,v)=>{
+      if(v && parseInt(v)>gemCount){ gemCount=parseInt(v)||0; LS.set('gems',v); updateGemUI(); }
+    });
+    TG.CloudStorage.getItem('skins',(e,v)=>{ if(v) try{ const s=new Set(JSON.parse(v)); s.forEach(x=>ownedSkins.add(x)); LS.set('skins',JSON.stringify([...ownedSkins])); }catch(e){} });
+    TG.CloudStorage.getItem('worlds',(e,v)=>{ if(v) try{ const w=new Set(JSON.parse(v)); w.forEach(x=>ownedWorlds.add(x)); LS.set('worlds',JSON.stringify([...ownedWorlds])); }catch(e){} });
+    TG.CloudStorage.getItem('askin',(e,v)=>{ if(v){ activeSkin=v; LS.set('askin',v); }});
+    TG.CloudStorage.getItem('aworld',(e,v)=>{ if(v){ activeWorld=v; LS.set('aworld',v); }});
+    TG.CloudStorage.getItem('tasks',(e,v)=>{ if(v) try{ const t=new Set(JSON.parse(v)); t.forEach(x=>_claimedTasks.add(x)); LS.set('tasks',JSON.stringify([...t])); }catch(e){} });
+  }catch(e){}
 }
 
 function saveData(){
-  TG.CloudStorage.setItem('hs',     String(highScore));
-  TG.CloudStorage.setItem('gems',   String(gemCount));
-  TG.CloudStorage.setItem('skins',  JSON.stringify([...ownedSkins]));
-  TG.CloudStorage.setItem('worlds', JSON.stringify([...ownedWorlds]));
-  TG.CloudStorage.setItem('askin',  activeSkin);
-  TG.CloudStorage.setItem('aworld', activeWorld);
-  TG.CloudStorage.setItem('adct',   JSON.stringify({date:today(), count:adWatchCount}));
+  // Save to localStorage immediately
+  LS.set('hs',     String(highScore));
+  LS.set('gems',   String(gemCount));
+  LS.set('skins',  JSON.stringify([...ownedSkins]));
+  LS.set('worlds', JSON.stringify([...ownedWorlds]));
+  LS.set('askin',  activeSkin);
+  LS.set('aworld', activeWorld);
+  LS.set('adct',   JSON.stringify({date:today(), count:adWatchCount}));
+  LS.set('tasks',  JSON.stringify([..._claimedTasks]));
 }
 
 function today(){ return new Date().toISOString().split('T')[0]; }
+
+// After loading, grey out already-claimed task buttons
+function restoreTaskUI(){
+  const oneTime = ['channel','share','invite5','invite10'];
+  oneTime.forEach(type=>{
+    if(_claimedTasks.has(type)){
+      // Find buttons with matching onclick
+      document.querySelectorAll(`[onclick="claimTask('${type}',this)"]`).forEach(btn=>{
+        btn.textContent='✅ Done'; btn.classList.add('done'); btn.disabled=true;
+      });
+    }
+  });
+  // Daily tasks
+  ['play5'].forEach(type=>{
+    const key=type+'_'+today();
+    if(_claimedTasks.has(key)){
+      document.querySelectorAll(`[onclick="claimTask('${type}',this)"]`).forEach(btn=>{
+        btn.textContent='✅ Done'; btn.classList.add('done'); btn.disabled=true;
+      });
+    }
+  });
+  // Ad watch button
+  const adBtn=document.getElementById('watch-ad-btn');
+  if(adBtn && adWatchCount>=MAX_ADS_PER_DAY){
+    adBtn.textContent='✅ Done'; adBtn.disabled=true;
+    adBtn.style.background='rgba(0,200,80,0.15)'; adBtn.style.color='#00e676';
+  }
+}
 
 function updateGemUI(){
   const display = gemCount>=1000 ? (gemCount/1000).toFixed(1)+'k' : gemCount;
@@ -1162,12 +1241,188 @@ function showGameOver(){
 }
 function hideGameOver(){ document.getElementById('go-panel').classList.remove('show'); }
 
-function openLeaderboard(){ SFX.tap(); toast('🏆 Leaderboard coming soon!'); }
+// ─── YOUR CREDENTIALS — fill these in ────────────────────────────────
+const BOT_USERNAME      = 'RocketSurge_bot';
+const CHANNEL_USERNAME  = 'RocketSurgeGame';
+const LEADERBOARD_URL   = 'https://rocketsurge.abhishekadhikari2212000.workers.dev';
+// ─────────────────────────────────────────────────────────────────────
+
+function getTGUserId(){ try{ return TG.initDataUnsafe?.user?.id||'guest'; }catch(e){ return 'guest'; } }
+function getTGUserName(){ try{ const u=TG.initDataUnsafe?.user; return u?(u.first_name||u.username||'Player'):'Player'; }catch(e){ return 'Player'; } }
+
+// Daily game counter for "play 5" task
+function _trackGamePlayed(){
+  const key='gpt_'+today();
+  const n=parseInt(LS.get(key,'0'))+1;
+  LS.set(key,String(n));
+  if(n>=5 && !_claimedTasks.has('play5_'+today())){
+    _claimedTasks.add('play5_'+today());
+    gemCount+=50; updateGemUI(); saveData();
+    toast('+50 💎 Daily challenge done!','#ffd200'); SFX.gem();
+  }
+}
+
+// ─── LEADERBOARD ─────────────────────────────────────────────────────
+// Submits score to Cloudflare Worker + shows top 10 in a Telegram popup
+
+async function submitScore(score){
+  if(score < 1) return;
+  try{
+    const uid   = getTGUserId();
+    const name  = getTGUserName();
+    await fetch(`${LEADERBOARD_URL}/score`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        user_id: String(uid),
+        name,
+        score,
+        init_data: TG.initData || ''  // for server-side validation
+      })
+    });
+  }catch(e){ /* silent fail — leaderboard is non-critical */ }
+}
+
+async function openLeaderboard(){
+  SFX.tap();
+  // Show loading sheet
+  showLeaderboardSheet('⏳ Loading…', []);
+
+  try{
+    const uid = getTGUserId();
+    const resp = await fetch(`${LEADERBOARD_URL}/scores?user_id=${uid}&limit=15`);
+    if(!resp.ok) throw new Error('fetch failed');
+    const { scores, rank } = await resp.json();
+    showLeaderboardSheet(`🏆 Top Players`, scores, rank);
+  }catch(e){
+    showLeaderboardSheet('🏆 Leaderboard', null);
+  }
+}
+
+function showLeaderboardSheet(title, scores, myRank){
+  // Remove any existing leaderboard sheet
+  document.getElementById('lb-sheet')?.remove();
+
+  const medals = ['🥇','🥈','🥉'];
+  const myUid  = String(getTGUserId());
+
+  let rows = '';
+  if(!scores){
+    rows = `<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.5);font-size:13px;">
+      Deploy the Cloudflare Worker to enable the real leaderboard.
+    </div>`;
+  } else if(scores.length===0){
+    rows = `<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.5);font-size:13px;">
+      No scores yet. Be the first! 🚀
+    </div>`;
+  } else {
+    rows = scores.map((s,i)=>{
+      const isMe = String(s.user_id)===myUid;
+      const medal= medals[i]||`${i+1}`;
+      const bg   = isMe ? 'background:rgba(255,210,0,0.12);border-color:rgba(255,210,0,0.35);' : '';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;
+        background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);
+        border-radius:12px;margin-bottom:6px;${bg}">
+        <div style="font-size:18px;width:28px;text-align:center;">${medal}</div>
+        <div style="flex:1;font-size:13px;font-weight:800;color:${isMe?'#ffd200':'#fff'};
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.name)}</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:18px;color:${isMe?'#ffd200':'rgba(255,255,255,0.85)'};">${s.score}</div>
+      </div>`;
+    }).join('');
+    if(myRank && myRank > scores.length){
+      rows += `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.4);padding:6px 0;">
+        Your rank: #${myRank}
+      </div>`;
+    }
+  }
+
+  const sheet = document.createElement('div');
+  sheet.id='lb-sheet';
+  sheet.style.cssText=`position:absolute;bottom:0;left:0;right:0;max-height:88%;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+    background:linear-gradient(180deg,rgba(6,14,30,0.97),rgba(3,8,18,0.99));
+    backdrop-filter:blur(30px);border-top:1px solid rgba(255,255,255,0.1);
+    border-radius:26px 26px 0 0;padding:0 0 28px;z-index:350;
+    transform:translateY(100%);transition:transform 0.42s cubic-bezier(0.22,1,0.36,1);
+    box-shadow:0 -30px 80px rgba(0,0,0,0.8);`;
+  sheet.innerHTML=`
+    <div style="width:40px;height:4px;background:rgba(255,255,255,0.18);border-radius:2px;margin:14px auto 0;"></div>
+    <div style="padding:14px 18px 12px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">${title}</div>
+      <button onclick="closeLbSheet()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);
+        border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:15px;
+        cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;">✕</button>
+    </div>
+    ${myRank ? `<div style="margin:0 12px 10px;padding:10px 14px;background:rgba(255,210,0,0.1);border:1px solid rgba(255,210,0,0.25);border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="color:rgba(255,255,255,0.7);font-size:12px;font-weight:800;">YOUR RANK</span>
+      <span style="font-family:'Fredoka One',cursive;font-size:20px;color:#ffd200;">#${myRank}</span>
+    </div>` : ''}
+    <div style="padding:0 12px;">${rows}</div>`;
+  document.getElementById('wrap').appendChild(sheet);
+  // Animate in
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ sheet.style.transform='translateY(0)'; }));
+}
+
+function closeLbSheet(){
+  const s=document.getElementById('lb-sheet');
+  if(s){ s.style.transform='translateY(100%)'; setTimeout(()=>s.remove(),450); }
+}
+
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 function shareGame(){
   SFX.tap();
-  toast('🔗 Share link copied!');
-  // Award share gems once
-  if(!window._sharedOnce){ window._sharedOnce=true; claimTask('share', null); }
+  const uid  = getTGUserId();
+  const name = getTGUserName();
+  const link = `https://t.me/${BOT_USERNAME}?start=ref_${uid}`;
+  const msg  = `🚀 ${name} scored ${highScore} in Rocket Surge!\nCan you beat me? 👇\n${link}`;
+  try{
+    TG.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(msg)}`);
+  }catch(e){
+    try{ navigator.clipboard.writeText(msg); toast('📋 Link copied!','#ffd200'); }catch(ee){}
+  }
+  if(!_claimedTasks.has('share')){ _claimedTasks.add('share'); gemCount+=50; updateGemUI(); saveData(); toast('+50 💎 Score shared!','#ffd200'); SFX.gem(); }
+}
+
+function claimTask(type, btn){
+  if(btn && btn.disabled) return;
+  const ONE_TIME = ['channel','share','invite5','invite10'];
+  const taskKey  = ONE_TIME.includes(type) ? type : type+'_'+today();
+  if(_claimedTasks.has(taskKey) && type!=='invite'){
+    toast('Already claimed!','#ff8c00'); return;
+  }
+  const rewards = { channel:200, invite:100, invite5:500, invite10:1000, play5:50, share:50 };
+  const r = rewards[type]||0;
+
+  if(type==='channel'){
+    TG.openTelegramLink(`https://t.me/${CHANNEL_USERNAME}`);
+    setTimeout(()=>{
+      if(!_claimedTasks.has(taskKey)){
+        _claimedTasks.add(taskKey); gemCount+=r; updateGemUI(); saveData();
+        toast(`+${r} 💎 Channel joined!`,'#ffd200'); SFX.gem();
+        if(btn){ btn.textContent='✅'; btn.classList.add('done'); btn.disabled=true; }
+      }
+    },3000); return;
+  }
+  if(type==='invite'||type==='invite5'||type==='invite10'){
+    const uid  = getTGUserId();
+    const link = `https://t.me/${BOT_USERNAME}?start=ref_${uid}`;
+    const msg  = `🚀 Join me in Rocket Surge!\n${link}`;
+    try{
+      TG.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(msg)}`);
+    }catch(e){ try{ navigator.clipboard.writeText(link); }catch(ee){} }
+    _claimedTasks.add(taskKey); gemCount+=r; updateGemUI(); saveData();
+    toast(`+${r} 💎 Invite sent!`,'#00e676'); SFX.gem();
+    TG.HapticFeedback.notificationOccurred('success');
+    if(type==='invite10' && !ownedSkins.has('alien')){ ownedSkins.add('alien'); saveData(); toast('👑 Alien Skin FREE!','#00e676'); }
+    if(btn){ btn.textContent='✅'; btn.classList.add('done'); btn.disabled=true; }
+    return;
+  }
+
+  _claimedTasks.add(taskKey); gemCount+=r; updateGemUI(); saveData();
+  toast(`+${r} 💎 Claimed!`,'#ffd200'); SFX.gem();
+  TG.HapticFeedback.notificationOccurred('success');
+  if(btn&&btn.tagName){ btn.textContent='✅ Done'; btn.classList.add('done'); btn.disabled=true; }
 }
 function toggleMute(){
   const muted = SFX.toggle();
@@ -1320,23 +1575,53 @@ function equipWorld(id){
   toast(`🌍 ${WORLDS.find(w=>w.id===id)?.name} activated!`,'#ffd200'); SFX.score();
 }
 
-function buyGemPack(id){
+async function buyGemPack(id){
   const p = GEM_PACKS.find(x=>x.id===id); if(!p) return;
-  // In production: TG.WebApp.openInvoice(...)
-  // Simulated for demo:
-  TG.WebApp.showPopup({
-    title: `Buy ${p.name}`,
-    message: `Get 💎 ${(p.gems+p.bonus).toLocaleString()} gems for ⭐ ${p.stars} Telegram Stars.\n\nIn production this opens Telegram's payment screen.`,
-    buttons:[{id:'buy',type:'default',text:`Buy for ⭐${p.stars}`},{id:'cancel',type:'cancel',text:'Cancel'}]
-  }, (btn)=>{
-    if(btn==='buy'){
-      gemCount += p.gems + p.bonus;
-      updateGemUI(); saveData();
-      renderPacks();
-      toast(`💎 +${(p.gems+p.bonus).toLocaleString()} gems added!`,'#ffd200');
-      SFX.newBest();
+  SFX.tap();
+  const total = p.gems + p.bonus;
+
+  // Show loading state
+  const btns = document.querySelectorAll(`[onclick="buyGemPack('${id}')"]`);
+  btns.forEach(b=>{ b.textContent='⏳'; b.disabled=true; });
+
+  try {
+    // Ask your bot to create a Telegram Stars invoice link.
+    // Your bot must implement: POST /createInvoice?pack=id&user_id=uid
+    // and return { url: "https://t.me/invoice/..." }
+    const uid = getTGUserId();
+    const resp = await fetch(`${LEADERBOARD_URL}/createInvoice`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ pack:id, user_id:uid, total_gems:total, stars:p.stars })
+    });
+
+    if(resp.ok){
+      const { url } = await resp.json();
+      // Open Telegram's native Stars payment screen
+      TG.openInvoice(url, (status)=>{
+        if(status === 'paid'){
+          gemCount += total;
+          updateGemUI(); saveData(); renderPacks();
+          toast(`💎 +${total.toLocaleString()} gems!`,'#ffd200');
+          SFX.newBest();
+          TG.HapticFeedback.notificationOccurred('success');
+        } else if(status === 'cancelled' || status === 'failed'){
+          toast('Payment cancelled','#ff8c00');
+        }
+        btns.forEach(b=>{ b.textContent=`⭐ ${p.stars}`; b.disabled=false; });
+      });
+    } else {
+      throw new Error('Invoice creation failed');
     }
-  });
+  } catch(err){
+    // Fallback if backend not set up yet — show instructions
+    btns.forEach(b=>{ b.textContent=`⭐ ${p.stars}`; b.disabled=false; });
+    TG.showPopup({
+      title:`⭐ ${p.name}`,
+      message:`To enable Telegram Stars payment:\n1. Deploy the Cloudflare Worker (see code)\n2. Set LEADERBOARD_URL in the game\n\nPack: 💎 ${total.toLocaleString()} gems for ⭐ ${p.stars} Stars`,
+      buttons:[{type:'ok',text:'OK'}]
+    },()=>{});
+  }
 }
 
 // ─── WATCH AD FOR GEMS ───────────────────────────────────────────────
@@ -1483,33 +1768,6 @@ function connectWallet(name){
   document.getElementById('wallet-trigger').style.background = 'linear-gradient(135deg,rgba(0,230,118,0.4),rgba(0,200,83,0.3))';
   document.getElementById('wallet-trigger').style.borderColor = 'rgba(0,230,118,0.4)';
   toast(`✅ ${name} connected!`, '#00e676');
-}
-
-function claimTask(type, btn){
-  if(btn && btn.disabled) return;
-  const rewards = {
-    channel:200, twitter:100, invite:100, invite5:500,
-    invite10:1000, play5:50, share:50
-  };
-  const r = rewards[type] || 0;
-  gemCount += r;
-
-  // Bonus: invite10 unlocks Alien skin for free
-  if(type==='invite10' && !ownedSkins.has('alien')){
-    ownedSkins.add('alien');
-    toast('👑 +1,000 💎 + Alien Skin unlocked FREE!','#00e676');
-  } else {
-    toast(`+${r.toLocaleString()} 💎 Gems claimed!`, '#ffd200');
-  }
-
-  updateGemUI(); saveData();
-  if(btn && btn.tagName){
-    btn.textContent = '✅ Done';
-    btn.classList.add('done');
-    btn.disabled = true;
-  }
-  SFX.gem();
-  TG.HapticFeedback.notificationOccurred('success');
 }
 
 function restartGame(){ SFX.tap(); hideGameOver(); G.restart(); }
@@ -2979,6 +3237,9 @@ class GameEngine {
     document.getElementById('ingame-mute').classList.remove('show');
     TG.HapticFeedback.notificationOccurred('error');
     SFX.crash();
+    _trackGamePlayed();
+    // Submit score to leaderboard (async, non-blocking)
+    if(this.score > 0) submitScore(this.score);
 
     // Fill GO panel
     document.getElementById('go-score').textContent = this.score;
@@ -3315,6 +3576,7 @@ window.addEventListener('resize', scaleGame);
 
 // ── BOOT ──
 loadData();
+setTimeout(restoreTaskUI, 100);  // after DOM settles
 G.start();
 </script>
 </body>
