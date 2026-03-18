@@ -48,7 +48,7 @@ body {
     0 30px 80px rgba(0,0,0,0.9),
     0 0 120px rgba(64,196,255,0.08);
 }
-canvas#gc { display: block; width: 360px; height: 640px; will-change: transform; }
+canvas#gc { display: block; width: 360px; height: 640px; will-change: transform; image-rendering: crisp-edges; image-rendering: -webkit-optimize-contrast; }
 
 /* Tap layer: only active during gameplay. Hidden during menu/game-over so buttons work. */
 #tap-layer {
@@ -1042,25 +1042,25 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
     <!-- Scrollable content -->
     <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;padding-bottom:110px;">
 
-    <!-- Your stats — compact bar, no gaps -->
-    <div style="margin:12px 12px 0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
-      <div style="background:linear-gradient(135deg,rgba(64,196,255,0.18),rgba(64,196,255,0.08));border:1px solid rgba(64,196,255,0.3);border-radius:12px;padding:10px 8px;text-align:center;">
+    <!-- Your stats — compact single row -->
+    <div style="margin:12px 12px 0;display:flex;gap:6px;">
+      <div style="flex:1;background:rgba(64,196,255,0.12);border:1px solid rgba(64,196,255,0.25);border-radius:12px;padding:10px 8px;text-align:center;">
         <div style="display:flex;align-items:center;justify-content:center;gap:3px;">
           <span style="font-family:'Fredoka One',cursive;font-size:20px;color:#40c4ff;" class="spark-val">0</span>
           <span style="font-size:14px;">⚡</span>
         </div>
-        <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.5);margin-top:1px;letter-spacing:0.5px;text-transform:uppercase;">My Sparks</div>
+        <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.45);margin-top:1px;letter-spacing:0.5px;text-transform:uppercase;">My Sparks</div>
       </div>
-      <div style="background:linear-gradient(135deg,rgba(255,210,0,0.18),rgba(255,210,0,0.08));border:1px solid rgba(255,210,0,0.3);border-radius:12px;padding:10px 8px;text-align:center;">
+      <div style="flex:1;background:rgba(255,210,0,0.12);border:1px solid rgba(255,210,0,0.25);border-radius:12px;padding:10px 8px;text-align:center;">
         <div style="font-family:'Fredoka One',cursive;font-size:20px;color:#ffd200;" id="spark-rank-val">–</div>
-        <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.5);margin-top:1px;letter-spacing:0.5px;text-transform:uppercase;">My Rank</div>
+        <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.45);margin-top:1px;letter-spacing:0.5px;text-transform:uppercase;">My Rank</div>
       </div>
-      <div style="background:linear-gradient(135deg,rgba(180,75,255,0.18),rgba(180,75,255,0.08));border:1px solid rgba(180,75,255,0.3);border-radius:12px;padding:10px 8px;text-align:center;">
+      <div style="flex:1;background:rgba(180,75,255,0.12);border:1px solid rgba(180,75,255,0.25);border-radius:12px;padding:10px 8px;text-align:center;">
         <div style="display:flex;align-items:center;justify-content:center;gap:3px;">
           <span style="font-family:'Fredoka One',cursive;font-size:20px;color:#c084fc;" id="streak-val">0</span>
           <span style="font-size:14px;">🔥</span>
         </div>
-        <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.5);margin-top:1px;letter-spacing:0.5px;text-transform:uppercase;">Streak</div>
+        <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.45);margin-top:1px;letter-spacing:0.5px;text-transform:uppercase;">Streak</div>
       </div>
     </div>
 
@@ -1153,7 +1153,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 
     <!-- Spark leaderboard -->
     <div style="margin:14px 12px 0;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:1.5px;text-transform:uppercase;">🏆 This Week's Top Earners</div>
         <div style="font-size:10px;color:rgba(255,255,255,0.3);">Top 50 win prizes</div>
       </div>
@@ -2128,21 +2128,21 @@ async function _fetchSparkLeaderboard(){
     if(!sparks || sparks.length===0){
       list.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No players yet this week. Be first! 🚀</div>';
     } else {
-      // Build rows — handle missing sparks gracefully
-      const rows = (sparks||[]).map((s,i)=>{
-        const isMe   = String(s.user_id)===myUid;
-        const medal  = ['🥇','🥈','🥉'][i]||'';
-        const sparkVal = typeof s.sparks==='number' ? s.sparks : 0;
-        const bg     = isMe
+      list.innerHTML = sparks.map((s,i)=>{
+        const isMe      = String(s.user_id)===myUid;
+        const medal     = ['🥇','🥈','🥉'][i]||'';
+        // Fix: always show spark value even if 0
+        const sparkVal  = (typeof s.sparks==='number') ? s.sparks : 0;
+        const bg        = isMe
           ? 'background:rgba(64,196,255,0.15);border:1px solid rgba(64,196,255,0.4);'
           : i<3
-          ? 'background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);'
-          : 'background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);';
-        const avatar = _playerAvatar(s.name, s.user_id, s.photo_url||'', 38);
-        const sub    = s.username ? `<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">@${escHtml(s.username)}</div>` : '';
+            ? 'background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);'
+            : 'background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);';
+        const avatar    = _playerAvatar(s.name, s.user_id, s.photo_url||'', 38);
+        const sub       = s.username ? `<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">@${escHtml(s.username)}</div>` : '';
         const rankBadge = medal
           ? `<div style="font-size:20px;width:28px;text-align:center;flex-shrink:0;">${medal}</div>`
-          : `<div style="width:28px;text-align:center;flex-shrink:0;font-size:12px;font-weight:900;color:${isMe?'#40c4ff':'rgba(255,255,255,0.4)'};">${i+1}</div>`;
+          : `<div style="width:28px;text-align:center;flex-shrink:0;font-size:13px;font-weight:900;color:${isMe?'#40c4ff':'rgba(255,255,255,0.4)'};">${i+1}</div>`;
         let prizeStr = '';
         if(pool_ton && pool_ton>0){
           const share = i===0?pool_ton*0.30:i===1?pool_ton*0.20:i===2?pool_ton*0.15:i<10?pool_ton*0.25/7:i<50?pool_ton*0.10/40:0;
@@ -2155,13 +2155,12 @@ async function _fetchSparkLeaderboard(){
             <div style="font-size:13px;font-weight:800;color:${isMe?'#40c4ff':'#fff'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.name)}${isMe?' <span style="font-size:10px;color:#40c4ff;margin-left:4px;">(you)</span>':''}</div>
             ${sub}${prizeStr}
           </div>
-          <div style="display:flex;align-items:center;gap:3px;flex-shrink:0;">
+          <div style="display:flex;align-items:center;gap:2px;flex-shrink:0;">
             <span style="font-family:'Fredoka One',cursive;font-size:20px;color:${isMe?'#40c4ff':'#fff'};">${sparkVal}</span>
-            <span style="font-size:16px;">⚡</span>
+            <span style="font-size:16px;line-height:1;">⚡</span>
           </div>
         </div>`;
-      });
-      list.innerHTML = rows.join('');
+      }).join('');
     }
   }catch(e){
     ['prize-pool-val','prize-pool-big'].forEach(id=>{
@@ -2291,7 +2290,7 @@ function showLeaderboardSheet(title, scores, myRank){
       No scores yet — be the first! 🚀
     </div>`;
   } else {
-    rows = (scores||[]).map((s,i)=>{
+    rows = scores.map((s,i)=>{
       const isMe   = String(s.user_id)===myUid;
       const medal  = ['🥇','🥈','🥉'][i] || '';
       const rankNum= i+1;
@@ -2940,7 +2939,7 @@ function restartGame(){ SFX.tap(); hideGameOver(); G.restart(); }
 // ─── CANVAS GAME ENGINE ─────────────────────────────────────────
 const canvas = document.getElementById('gc');
 // DPR scaling — makes canvas sharp on retina/high-DPI screens
-const DPR = Math.min(Math.round(window.devicePixelRatio || 1), 2); // cap at 2x — safe for all devices
+const DPR = Math.min(window.devicePixelRatio || 1, 2); // cap at 2x for performance
 canvas.width  = 360 * DPR;
 canvas.height = 640 * DPR;
 canvas.style.width  = '360px';
@@ -3021,7 +3020,7 @@ class Particle {
 
 class Cloud {
   constructor(x,y,w,speed){ this.x=x;this.y=y;this.w=w;this.speed=speed; }
-  update(dt){ this.x-=this.speed*dt*60; if(this.x+this.w<0) this.x=W+20; }
+  update(){ this.x-=this.speed; if(this.x+this.w<0) this.x=W+20; }
   draw(ctx){
     const h=this.w*0.45;
     ctx.fillStyle='rgba(255,255,255,0.12)';
@@ -3059,8 +3058,7 @@ class RocketPlayer {
     this.legPhase=0;
     this.eyeSquint=0;
     this.mouthOpen=0;
-    this.trailBuf=new Array(20).fill(null).map(()=>({x:0,y:0,age:0}));
-    this.trailHead=0; this.trailLen=0;
+    this.trail=[];
   }
 
   bob(dt){
@@ -3070,8 +3068,8 @@ class RocketPlayer {
   }
 
   thrust(){
-    this.vy        = -380;  // slightly stronger for crisp feel
-    this.y        -= 2;    // instant 2px nudge so response feels immediate
+    this.vy        = -380;
+    this.y        -= 3;    // instant nudge so response feels immediate
     this.thrustPow = 1.0;
     this.squishY   = 0.75;
     this.squishX   = 1.28;
@@ -3102,11 +3100,10 @@ class RocketPlayer {
     // Leg kick
     this.legPhase += dt * (4 + this.thrustPow * 8);
 
-    // Trail — circular ring buffer (no array allocation per frame)
-    this.trailBuf[this.trailHead] = {x:this.x, y:this.y, age:0};
-    this.trailHead = (this.trailHead+1) % 20;
-    if(this.trailLen < 20) this.trailLen++;
-    for(let i=0;i<this.trailLen;i++) this.trailBuf[i].age += dt*4;
+    // Trail
+    this.trail.unshift({x:this.x, y:this.y, age:0});
+    if(this.trail.length > 20) this.trail.pop();
+    for(const t of this.trail) t.age += dt*4;
   }
 
   draw(ctx, bobbing){
@@ -3243,7 +3240,7 @@ function _eye(ctx, x, y, w, h, pupilX, col='#1a0a00'){
 
 // ── 1. BARRY — chunky JJ-style pilot ──────────────────────────────────
 function drawChar_Barry(ctx,T,lp,sq,mo,bobT){
-  const fl=0.85+Math.sin(performance.now()*0.003)*0.12; // smooth flame flicker via sin
+  const fl=0.8+Math.random()*0.4;
   const sk=getCurSkin();
   // ── Jetpack on back (left side, mirrored in draw call) ──
   _jetpack(ctx, -30, -14, T, fl, '#2a3a1a', '#1a2210', '#fff8c0', '#ff6600');
@@ -3320,7 +3317,7 @@ function drawChar_Barry(ctx,T,lp,sq,mo,bobT){
 
 // ── 2. ALIEN — big-headed green extraterrestrial ───────────────────────
 function drawChar_Alien(ctx,T,lp,sq,mo,bobT){
-  const fl=0.85+Math.sin(performance.now()*0.003)*0.12; // smooth flame flicker via sin
+  const fl=0.8+Math.random()*0.4;
   // Alien anti-grav jetpack — sleek silver with green glow
   _jetpack(ctx,-30,-14,T,fl,'#556655','#334433','rgba(100,255,200,0.9)','rgba(0,180,120,0.7)');
   ctx.fillStyle='rgba(100,200,120,0.4)'; rr(ctx,-16,-4,4,8,2); ctx.fill();
@@ -3385,7 +3382,7 @@ function drawChar_Alien(ctx,T,lp,sq,mo,bobT){
 
 // ── 3. ROBOT — boxy chrome mech ────────────────────────────────────────
 function drawChar_Robot(ctx,T,lp,bobT){
-  const fl=0.85+Math.sin(performance.now()*0.003)*0.12; // smooth flame flicker via sin
+  const fl=0.8+Math.random()*0.4;
   // Robot plasma thruster pack — chrome with blue flame
   _jetpack(ctx,-30,-14,T,fl,'#334455','#223344','rgba(150,220,255,0.95)','rgba(50,100,255,0.6)');
   ctx.fillStyle='rgba(80,120,180,0.4)'; rr(ctx,-16,-4,4,10,2); ctx.fill();
@@ -3460,7 +3457,7 @@ function drawChar_Robot(ctx,T,lp,bobT){
 
 // ── 4. INFERNO — fire demon, flame wings ───────────────────────────────
 function drawChar_Fire(ctx,T,lp,sq,mo,bobT){
-  const fl=0.85+Math.sin(performance.now()*0.003)*0.12; // smooth flame flicker via sin
+  const fl=0.8+Math.random()*0.4;
   const t=performance.now()/1000;
   // Fire aura around body
   for(let i=0;i<6;i++){
@@ -3543,7 +3540,7 @@ function drawChar_Fire(ctx,T,lp,sq,mo,bobT){
 
 // ── 5. ICE QUEEN — crystal ice mage ───────────────────────────────────
 function drawChar_Ice(ctx,T,lp,bobT){
-  const fl=0.85+Math.sin(performance.now()*0.003)*0.12; // smooth flame flicker via sin
+  const fl=0.8+Math.random()*0.4;
   const t=performance.now()/1000;
   // Ice crystal jetpack — frost blue
   _jetpack(ctx,-30,-14,T,fl,'#224466','#113355','rgba(200,240,255,0.98)','rgba(80,160,255,0.6)');
@@ -3619,20 +3616,14 @@ function drawChar_Ice(ctx,T,lp,bobT){
 
 // ── 6. SHADOW NINJA — stealthy, black & purple, star shuriken ──────────
 function drawChar_Ninja(ctx,T,lp,bobT){
-  const fl=0.85; // fixed flame intensity — no per-frame random flicker
+  const fl=0.8+Math.random()*0.4;
   const t=performance.now()/1000;
-  // Shadow smoke trail — fixed coordinates relative to character origin
-  ctx.save();
-  for(let i=0;i<6;i++){
-    const ox = -8 - i*5, oy = i*1.5;
-    const r = 9 - i*1.2;
-    const a = ctx.createRadialGradient(ox,oy,0,ox,oy,r);
-    a.addColorStop(0,`rgba(120,0,180,${0.20-i*0.025})`);
-    a.addColorStop(1,'rgba(60,0,120,0)');
-    ctx.fillStyle=a;
-    ctx.beginPath(); ctx.arc(ox,oy,r,0,Math.PI*2); ctx.fill();
+  // Shadow smoke trail
+  for(let i=0;i<5;i++){
+    const a=ctx.createRadialGradient(i*3-6,i*2,0,i*3-6,i*2,8-i);
+    a.addColorStop(0,`rgba(100,0,150,${0.15-i*0.025})`); a.addColorStop(1,'rgba(50,0,100,0)');
+    ctx.fillStyle=a; ctx.beginPath(); ctx.arc(i*3-6+18,i*2,8-i,0,Math.PI*2); ctx.fill();
   }
-  ctx.restore();
   // Shadow jetpack — matte black with purple flame
   _jetpack(ctx,-30,-14,T,fl,'#0a0018','#05000f','rgba(180,100,255,0.95)','rgba(80,0,200,0.6)');
   ctx.fillStyle='rgba(120,0,180,0.35)'; rr(ctx,-16,-3,4,10,2); ctx.fill();
@@ -3693,7 +3684,7 @@ function drawChar_Ninja(ctx,T,lp,bobT){
 
 // ── 7. SPACE KNIGHT — armored crusader with energy lance ───────────────
 function drawChar_Knight(ctx,T,lp,bobT){
-  const fl=0.85+Math.sin(performance.now()*0.003)*0.12; // smooth flame flicker via sin
+  const fl=0.8+Math.random()*0.4;
   const t=performance.now()/1000;
   // Knight's enchanted jetpack — dark purple with gold-purple flame
   _jetpack(ctx,-30,-14,T,fl,'#221144','#110833','rgba(255,230,100,0.98)','rgba(180,80,255,0.7)');
@@ -3774,7 +3765,7 @@ function drawChar_Knight(ctx,T,lp,bobT){
 
 // ── 8. GOLD LEGEND — angelic god-form, pure gold light ─────────────────
 function drawChar_Golden(ctx,T,lp,sq,mo,bobT){
-  const fl=0.85+Math.sin(performance.now()*0.003)*0.12; // smooth flame flicker via sin
+  const fl=0.8+Math.random()*0.4;
   const t=performance.now()/1000;
   // Divine aura
   const aura=ctx.createRadialGradient(0,0,5,0,0,40); aura.addColorStop(0,`rgba(255,240,100,${0.08+T*0.06})`); aura.addColorStop(0.5,`rgba(255,180,0,${0.05+T*0.03})`); aura.addColorStop(1,'rgba(255,140,0,0)');
@@ -3883,7 +3874,6 @@ function drawBeam(ctx,x,y,w,h,isTop){
 
 // ── 1. SPACE — steel industrial beams (original) ──────────────────────
 function _obs_SpacePipe(ctx,x,y,w,h,isTop){
-  ctx.shadowBlur=0; ctx.shadowColor='rgba(0,0,0,0)'; // reset before drawing
   const CAP=20, bodyY=isTop?y:y+CAP, bodyH=h-CAP;
   if(bodyH>0){
     const bg=ctx.createLinearGradient(x,0,x+w,0);
@@ -3904,7 +3894,6 @@ function _obs_SpacePipe(ctx,x,y,w,h,isTop){
 
 // ── 2. SOLAR SUNSET — crumbling ancient stone pillars ──────────────────
 function _obs_SunsetPillar(ctx,x,y,w,h,isTop){
-  ctx.shadowBlur=0; ctx.shadowColor='rgba(0,0,0,0)'; // reset before drawing
   const CAP=24, bodyY=isTop?y:y+CAP, bodyH=h-CAP;
   if(bodyH>0){
     // Stone texture — alternating blocks
@@ -3941,7 +3930,6 @@ function _obs_SunsetPillar(ctx,x,y,w,h,isTop){
 
 // ── 3. NEON TOKYO — glowing neon tube barriers ─────────────────────────
 function _obs_NeonTube(ctx,x,y,w,h,isTop){
-  ctx.shadowBlur=0; ctx.shadowColor='rgba(0,0,0,0)'; // reset before drawing
   const CAP=16, bodyY=isTop?y:y+CAP, bodyH=h-CAP;
   if(bodyH>0){
     // Dark metallic backing
@@ -3978,7 +3966,6 @@ function _obs_NeonTube(ctx,x,y,w,h,isTop){
 
 // ── 4. OCEAN ABYSS — massive coral reef pillars ─────────────────────────
 function _obs_CoralPillar(ctx,x,y,w,h,isTop){
-  ctx.shadowBlur=0; ctx.shadowColor='rgba(0,0,0,0)'; // reset before drawing
   const CAP=26, bodyY=isTop?y:y+CAP, bodyH=h-CAP;
   if(bodyH>0){
     // Deep ocean rock base
@@ -4024,7 +4011,6 @@ function _obs_CoralPillar(ctx,x,y,w,h,isTop){
 
 // ── 5. LAVA WORLD — jagged volcanic rock columns ────────────────────────
 function _obs_LavaRock(ctx,x,y,w,h,isTop){
-  ctx.shadowBlur=0; ctx.shadowColor='rgba(0,0,0,0)'; // reset before drawing
   const CAP=22, bodyY=isTop?y:y+CAP, bodyH=h-CAP;
   if(bodyH>0){
     // Dark igneous rock
@@ -4068,7 +4054,6 @@ function _obs_LavaRock(ctx,x,y,w,h,isTop){
 
 // ── 6. ARCTIC STORM — crackling Tesla coil storm towers ────────────────
 function _obs_IceSpike(ctx,x,y,w,h,isTop){
-  ctx.shadowBlur=0; ctx.shadowColor='rgba(0,0,0,0)'; // reset before drawing
   const CAP=26, bodyY=isTop?y:y+CAP, bodyH=h-CAP;
   const t = performance.now()/1000;
 
@@ -4165,7 +4150,6 @@ function _obs_IceSpike(ctx,x,y,w,h,isTop){
 
 // ── 7. JUNGLE RUINS — ancient mossy stone with vines ───────────────────
 function _obs_VinePillar(ctx,x,y,w,h,isTop){
-  ctx.shadowBlur=0; ctx.shadowColor='rgba(0,0,0,0)'; // reset before drawing
   const CAP=22, bodyY=isTop?y:y+CAP, bodyH=h-CAP;
   if(bodyH>0){
     // Stone blocks
@@ -4205,7 +4189,6 @@ function _obs_VinePillar(ctx,x,y,w,h,isTop){
 
 // ── 8. GALAXY CORE — giant crystal shards / alien monoliths ────────────
 function _obs_CrystalShard(ctx,x,y,w,h,isTop){
-  ctx.shadowBlur=0; ctx.shadowColor='rgba(0,0,0,0)'; // reset before drawing
   const CAP=24, bodyY=isTop?y:y+CAP, bodyH=h-CAP;
   if(bodyH>0){
     // Dark crystal body with inner glow
@@ -4291,25 +4274,19 @@ class GameEngine {
     this.running=false; this.lastT=0;
   }
 
-  start(){
-    if(this.running) return;
-    this.running=true;
-    this._loopBound=t=>{ this.lastT=t; this._loopBound=t2=>this.loop(t2); requestAnimationFrame(this._loopBound); };
-    requestAnimationFrame(this._loopBound);
-  }
+  start(){ if(this.running) return; this.running=true; this.lastT=performance.now(); requestAnimationFrame(t=>this.loop(t)); }
 
   loop(t){
     if(!this.running) return;
-    const raw=(t-this.lastT)/1000; this.lastT=t;
-    // Clamp dt: skip large gaps (tab switch etc) but always draw
-    const dt=Math.min(Math.max(raw,0.001),0.05);
+    const dt=Math.min((t-this.lastT)/1000,0.033);
+    this.lastT=t;
     this._dt=dt;
     this.update(dt); this.draw();
-    requestAnimationFrame(this._loopBound);
+    requestAnimationFrame(t=>this.loop(t));
   }
 
   update(dt){
-    if(this.shakeT>0){ this.shakeT-=dt; const m=this.shakeT*14; const st=performance.now()*0.05; this.shakeX=Math.sin(st*7.3)*m; this.shakeY=Math.sin(st*11.7)*m; }
+    if(this.shakeT>0){ this.shakeT-=dt; const m=this.shakeT*14; this.shakeX=(Math.random()-0.5)*m; this.shakeY=(Math.random()-0.5)*m; }
     else { this.shakeX=0; this.shakeY=0; }
 
     // ── SPEED PROGRESSION (like Flappy Bird) ──
@@ -4319,7 +4296,7 @@ class GameEngine {
     this.pipeInterval= Math.max(0.92, 1.50 - speedTier * 0.10); // 1.5 → 0.92 seconds between pipes
     this.gapSize     = Math.max(105, 145 - speedTier * 7);// 145 → 105px gap
 
-    for(const c of this.clouds) c.update(dt);
+    for(const c of this.clouds) c.update();
     for(const s of STARS){ s.twinkle+=dt*1.5; s.x-=s.speed*0.3; if(s.x<0) s.x=W; }
 
     if(this.state===ST_MENU) this.player.bob(dt);
@@ -4526,8 +4503,7 @@ class GameEngine {
   }
 
   updateScoreHUD(){
-    if(!this._scoreEl) this._scoreEl=document.getElementById('score-num');
-    this._scoreEl.textContent=this.score;
+    document.getElementById('score-num').textContent=this.score;
   }
 
   spawnScoreFloat(){
@@ -4577,7 +4553,6 @@ class GameEngine {
     // Use setTransform to apply both DPR scale and shake offset in one call
     // This avoids ctx.restore() wiping the DPR scale
     ctx.setTransform(DPR, 0, 0, DPR, this.shakeX * DPR, this.shakeY * DPR);
-    ctx.imageSmoothingEnabled = false;
 
     this.drawBg();
     this.drawStars();
@@ -4590,7 +4565,6 @@ class GameEngine {
 
     // Reset to clean DPR scale (no shake) for overlay drawing
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.imageSmoothingEnabled = false;
 
     // ── REVIVE COUNTDOWN OVERLAY ──
     if(this.state===ST_REVIVE){
@@ -4756,18 +4730,43 @@ const G = new GameEngine();
 // Tap-layer is only visible during ST_PLAYING — it catches in-flight taps
 const tapLayer = document.getElementById('tap-layer');
 let _lastTap = 0;
-function _doTap(){
+let _touchFired = false; // prevent double-fire from touch+pointer
+
+function _doTap(fromTouch){
   const now = Date.now();
-  if(now - _lastTap < 80) return; // 80ms debounce — prevents double-jump on Android
+  if(now - _lastTap < 80) return; // debounce
   _lastTap = now;
   if(G.state===ST_PLAYING) G.tap();
 }
-// pointerdown — zero delay, unified touch/mouse/stylus, no 300ms delay
-// Only add touchstart if pointerdown is not supported (very old browsers)
-tapLayer.addEventListener('pointerdown', e=>{ e.preventDefault(); _doTap(); }, {passive:false});
-if(!window.PointerEvent){
-  tapLayer.addEventListener('touchstart', e=>{ e.preventDefault(); _doTap(); }, {passive:false});
-}
+
+// touchstart — fires instantly on mobile, most reliable in Telegram WebView
+tapLayer.addEventListener('touchstart', e=>{
+  e.preventDefault();
+  _touchFired = true;
+  _doTap(true);
+}, {passive:false});
+
+// pointerdown — fires on desktop/stylus, skip if touchstart already fired
+tapLayer.addEventListener('pointerdown', e=>{
+  if(_touchFired){ _touchFired=false; return; } // already handled by touchstart
+  e.preventDefault();
+  _doTap(false);
+}, {passive:false});
+
+// Also listen on the whole wrap as a safety net
+// (in case tap-layer misses due to z-index issues)
+document.getElementById('wrap').addEventListener('touchstart', e=>{
+  if(G.state!==ST_PLAYING) return;
+  // Only if tap-layer is active and target is canvas/wrap itself
+  if(e.target.id==='gc' || e.target.id==='tap-layer' || e.target.id==='wrap'){
+    e.preventDefault();
+    const now=Date.now();
+    if(now-_lastTap<80) return;
+    _lastTap=now;
+    G.tap();
+  }
+},{passive:false});
+
 // Keyboard spacebar
 document.addEventListener('keydown', e=>{
   if(e.code==='Space'){ e.preventDefault(); if(G.state===ST_PLAYING) G.tap(); }
