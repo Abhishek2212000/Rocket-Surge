@@ -1034,7 +1034,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
     <div style="flex-shrink:0;">
       <div style="width:40px;height:4px;background:rgba(255,255,255,0.35);border-radius:2px;margin:14px auto 0;"></div>
       <div style="padding:14px 18px 0;display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">⚡ Sparks & Prizes</div>
+        <div><div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">⚡ Weekly Race</div><div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">Earn ⚡ Sparks · Top 50 win TON every Monday</div></div>
         <button onclick="closeSparkSheet()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;touch-action:manipulation;">✕</button>
       </div>
     </div>
@@ -1049,11 +1049,11 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
           <span style="font-family:'Fredoka One',cursive;font-size:20px;color:#40c4ff;" class="spark-val">0</span>
           <span style="font-size:14px;">⚡</span>
         </div>
-        <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.45);margin-top:1px;letter-spacing:0.5px;text-transform:uppercase;">My Sparks</div>
+        <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.45);margin-top:1px;letter-spacing:0.5px;text-transform:uppercase;">This Week</div>
       </div>
       <div style="flex:1;background:rgba(255,210,0,0.12);border:1px solid rgba(255,210,0,0.25);border-radius:12px;padding:10px 8px;text-align:center;">
         <div style="font-family:'Fredoka One',cursive;font-size:20px;color:#ffd200;" id="spark-rank-val">–</div>
-        <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.45);margin-top:1px;letter-spacing:0.5px;text-transform:uppercase;">My Rank</div>
+        <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.45);margin-top:1px;letter-spacing:0.5px;text-transform:uppercase;">Week Rank</div>
       </div>
       <div style="flex:1;background:rgba(180,75,255,0.12);border:1px solid rgba(180,75,255,0.25);border-radius:12px;padding:10px 8px;text-align:center;">
         <div style="display:flex;align-items:center;justify-content:center;gap:3px;">
@@ -1154,7 +1154,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
     <!-- Spark leaderboard -->
     <div style="margin:14px 12px 0;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:1.5px;text-transform:uppercase;">🏆 This Week's Top Earners</div>
+        <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:1.5px;text-transform:uppercase;">⚡ This Week's Standings</div>
         <div style="font-size:10px;color:rgba(255,255,255,0.3);">Top 50 win prizes</div>
       </div>
       <div id="spark-lb-list">
@@ -1259,7 +1259,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
     </div>
     <div class="nav-btn nb-ranks" onclick="openLeaderboard()">
       <div class="nb-icon-wrap">🥇</div>
-      <span class="nb-label">Ranks</span>
+      <span class="nb-label">Scores</span>
     </div>
     <div class="nav-btn nb-help" onclick="openHelp()">
       <div class="nb-icon-wrap">💡</div>
@@ -2248,16 +2248,16 @@ async function submitScore(score){
 
 async function openLeaderboard(){
   SFX.tap(); closeAllSheets();
-  showLeaderboardSheet('⏳ Loading…', []);
+  showLeaderboardSheet('⏳ Loading scores…', []);
 
   try{
     const uid = getTGUserId();
     const resp = await fetch(`${LEADERBOARD_URL}/scores?user_id=${uid}&limit=50`);
     if(!resp.ok) throw new Error('fetch failed');
     const { scores, rank } = await resp.json();
-    showLeaderboardSheet(`🏆 Top Players`, scores, rank);
+    showLeaderboardSheet('🏆 All-Time Scores', scores, rank);
   }catch(e){
-    showLeaderboardSheet('🏆 Leaderboard', null);
+    showLeaderboardSheet('🏆 All-Time Scores', null);
   }
 }
 
@@ -2334,7 +2334,7 @@ function showLeaderboardSheet(title, scores, myRank){
       <div style="padding:12px 16px 10px;display:flex;justify-content:space-between;align-items:center;">
         <div>
           <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#fff;">${title}</div>
-          ${playerCount}
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Best score ever · ${playerCount}</div>
         </div>
         <button onclick="closeLbSheet()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.15);
           border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:16px;
