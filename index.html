@@ -1964,19 +1964,13 @@ function _avatarHTML(name, userId, size=36){
   ];
   const idx  = Math.abs(String(userId).split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % colors.length;
   const [bg, txt] = colors[idx];
-  const initials = name.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase() || '?';
-  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};
-    display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.38)}px;
-    font-weight:800;color:${txt};flex-shrink:0;font-family:'Nunito',sans-serif;">${initials}</div>`;
+  const initials = (name||'?').trim().split(/\s+/).map(w=>w[0]||'').slice(0,2).join('').toUpperCase() || '?';
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.38)}px;font-weight:800;color:${txt};flex-shrink:0;font-family:'Nunito',sans-serif;">${escHtml(initials)}</div>`;
 }
 
-// Avatar with photo or initials fallback
 function _playerAvatar(name, userId, photoUrl, size=36){
-  if(photoUrl){
-    return `<img src="${photoUrl}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;"
-      onerror="this.replaceWith(document.createRange().createContextualFragment(\`${_avatarHTML(name,userId,size)}\`))" />`;
-  }
-  return _avatarHTML(name, userId, size);
+  // Always use initials — photo URLs from Telegram expire and break layout when they fail
+  return _avatarHTML(name||'?', userId, size);
 }
 
 // Daily game counter for "play 5" task
@@ -2128,38 +2122,31 @@ async function _fetchSparkLeaderboard(){
     if(!sparks || sparks.length===0){
       list.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:13px;">No players yet this week. Be first! 🚀</div>';
     } else {
-      list.innerHTML = sparks.map((s,i)=>{
-        const isMe      = String(s.user_id)===myUid;
-        const medal     = ['🥇','🥈','🥉'][i]||'';
-        // Fix: always show spark value even if 0
-        const sparkVal  = (typeof s.sparks==='number') ? s.sparks : 0;
-        const bg        = isMe
+      list.innerHTML = (sparks||[]).map((s,i)=>{
+        const isMe   = String(s.user_id)===myUid;
+        const medals = ['🥇','🥈','🥉'];
+        const medal  = medals[i]||'';
+        const sv     = typeof s.sparks==='number' ? s.sparks : 0;
+        const nm     = escHtml(s.name||'Player');
+        const uu     = s.username ? escHtml(s.username) : '';
+        const av     = _playerAvatar(s.name||'?', s.user_id, '', 38);
+        const rowBg  = isMe
           ? 'background:rgba(64,196,255,0.15);border:1px solid rgba(64,196,255,0.4);'
-          : i<3
-            ? 'background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);'
-            : 'background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);';
-        const avatar    = _playerAvatar(s.name, s.user_id, s.photo_url||'', 38);
-        const sub       = s.username ? `<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">@${escHtml(s.username)}</div>` : '';
-        const rankBadge = medal
-          ? `<div style="font-size:20px;width:28px;text-align:center;flex-shrink:0;">${medal}</div>`
-          : `<div style="width:28px;text-align:center;flex-shrink:0;font-size:13px;font-weight:900;color:${isMe?'#40c4ff':'rgba(255,255,255,0.4)'};">${i+1}</div>`;
-        let prizeStr = '';
+          : i<3 ? 'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);'
+          : 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);';
+        const rankEl = medal
+          ? '<div style="font-size:20px;width:28px;text-align:center;flex-shrink:0;">'+medal+'</div>'
+          : '<div style="width:28px;text-align:center;flex-shrink:0;font-size:13px;font-weight:900;color:'+(isMe?'#40c4ff':'rgba(255,255,255,0.4)')+'">'+(i+1)+'</div>';
+        const sub    = uu ? '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">@'+uu+'</div>' : '';
+        let prize = '';
         if(pool_ton && pool_ton>0){
-          const share = i===0?pool_ton*0.30:i===1?pool_ton*0.20:i===2?pool_ton*0.15:i<10?pool_ton*0.25/7:i<50?pool_ton*0.10/40:0;
-          if(share>=0.001) prizeStr=`<div style="font-size:10px;color:rgba(255,210,0,0.8);margin-top:2px;">≈${share.toFixed(3)} TON</div>`;
+          const sh = i===0?pool_ton*0.30:i===1?pool_ton*0.20:i===2?pool_ton*0.15:i<10?pool_ton*0.25/7:i<50?pool_ton*0.10/40:0;
+          if(sh>=0.001) prize='<div style="font-size:10px;color:rgba(255,210,0,0.8);margin-top:2px;">~'+sh.toFixed(3)+' TON</div>';
         }
-        return `<div style="display:flex;align-items:center;gap:10px;padding:11px 12px;${bg}border-radius:14px;margin-bottom:6px;">
-          ${rankBadge}
-          ${avatar}
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:13px;font-weight:800;color:${isMe?'#40c4ff':'#fff'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.name)}${isMe?' <span style="font-size:10px;color:#40c4ff;margin-left:4px;">(you)</span>':''}</div>
-            ${sub}${prizeStr}
-          </div>
-          <div style="display:flex;align-items:center;gap:2px;flex-shrink:0;">
-            <span style="font-family:'Fredoka One',cursive;font-size:20px;color:${isMe?'#40c4ff':'#fff'};">${sparkVal}</span>
-            <span style="font-size:16px;line-height:1;">⚡</span>
-          </div>
-        </div>`;
+        const clr    = isMe?'#40c4ff':'#fff';
+        const nameEl = '<div style="font-size:13px;font-weight:800;color:'+clr+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+nm+(isMe?' <span style="font-size:10px;color:#40c4ff;margin-left:3px;">(you)</span>':'')+'</div>';
+        const sparkEl= '<div style="display:flex;align-items:center;gap:2px;flex-shrink:0;"><span style="font-size:20px;font-weight:900;color:'+clr+';">'+sv+'</span><span style="font-size:15px;">⚡</span></div>';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:11px 12px;'+rowBg+'border-radius:14px;margin-bottom:6px;">'+rankEl+av+'<div style="flex:1;min-width:0;">'+nameEl+sub+prize+'</div>'+sparkEl+'</div>';
       }).join('');
     }
   }catch(e){
@@ -2290,31 +2277,25 @@ function showLeaderboardSheet(title, scores, myRank){
       No scores yet — be the first! 🚀
     </div>`;
   } else {
-    rows = scores.map((s,i)=>{
+    rows = (scores||[]).map((s,i)=>{
       const isMe   = String(s.user_id)===myUid;
-      const medal  = ['🥇','🥈','🥉'][i] || '';
-      const rankNum= i+1;
-      const bg     = isMe
+      const medals = ['🥇','🥈','🥉'];
+      const medal  = medals[i]||'';
+      const score  = typeof s.score==='number' ? s.score : 0;
+      const nameStr = escHtml(s.name||'Player');
+      const userStr = s.username ? escHtml(s.username) : '';
+      const avatar  = _playerAvatar(s.name||'?', s.user_id, '', 40);
+      const nameTxt = isMe ? nameStr+' <span style="font-size:10px;color:#ffd200;margin-left:4px;">(you)</span>' : nameStr;
+      const sub     = userStr ? '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">@'+userStr+'</div>' : '';
+      const rankCol = medal
+        ? '<div style="font-size:22px;width:32px;text-align:center;flex-shrink:0;">'+medal+'</div>'
+        : '<div style="width:32px;text-align:center;flex-shrink:0;font-size:13px;font-weight:900;color:'+(isMe?'#ffd200':'rgba(255,255,255,0.4)')+'">'+(i+1)+'</div>';
+      const rowBg   = isMe
         ? 'background:rgba(255,210,0,0.15);border:1px solid rgba(255,210,0,0.4);'
-        : i < 3
-        ? 'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);'
-        : 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);';
-      const avatar   = _playerAvatar(s.name, s.user_id, s.photo_url||'', 40);
-      const username = s.username ? `<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">@${escHtml(s.username)}</div>` : '';
-      const rankEl   = medal
-        ? `<div style="font-size:22px;width:32px;text-align:center;flex-shrink:0;">${medal}</div>`
-        : `<div style="width:32px;text-align:center;flex-shrink:0;font-size:13px;font-weight:900;color:${isMe?'#ffd200':'rgba(255,255,255,0.4)'};">${rankNum}</div>`;
-      return `<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;${bg}border-radius:14px;margin-bottom:6px;transition:opacity 0.1s;">
-        ${rankEl}
-        ${avatar}
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:800;color:${isMe?'#ffd200':'#fff'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-            ${escHtml(s.name)}${isMe?'<span style="font-size:10px;color:#ffd200;font-weight:700;margin-left:5px;">(you)</span>':''}
-          </div>
-          ${username}
-        </div>
-        <div style="font-family:'Fredoka One',cursive;font-size:22px;color:${isMe?'#ffd200':i<3?'#fff':'rgba(255,255,255,0.75)'};flex-shrink:0;">${s.score}</div>
-      </div>`;
+        : i<3 ? 'background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);'
+        : 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);';
+      const scoreCol = '<div style="font-size:22px;font-weight:900;color:'+(isMe?'#ffd200':i<3?'#fff':'rgba(255,255,255,0.8)')+';flex-shrink:0;">'+score+'</div>';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;'+rowBg+'border-radius:14px;margin-bottom:6px;">'+rankCol+avatar+'<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:800;color:'+(isMe?'#ffd200':'#fff')+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+nameTxt+'</div>'+sub+'</div>'+scoreCol+'</div>';
     }).join('');
   }
 
