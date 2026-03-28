@@ -647,7 +647,7 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
 </style>
 <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 <!-- TON Connect UI SDK (required: Telegram Apps Center) -->
-<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js" onload="window.__tcReady=true;if(window.__tcInit)window.__tcInit();"></script>
+<script src="https://unpkg.com/@tonconnect/ui@2.0.8/dist/tonconnect-ui.min.js" onload="window.__tcReady=true;if(window.__tcInit)window.__tcInit();"></script>
 <!-- Telegram Mini Apps Analytics SDK (required: Telegram Apps Center) -->
 <!-- Per official TON docs: async script tag FIRST, then initAnalytics() function -->
 <script
@@ -934,36 +934,40 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
   </div>
 
   <!-- ── WALLET MODAL ── -->
-  <div id="wallet-modal">
+    <div id="wallet-modal">
     <div class="wallet-sheet">
       <div class="ws-handle"></div>
-      <div class="ws-header">
-        <div class="ws-title">💎 Connect TON Wallet</div>
-        <div class="ws-sub">Connect your TON wallet to receive prizes</div>
+
+      <!-- Header -->
+      <div style="padding:16px 18px 4px;">
+        <div style="font-family:'Fredoka One',cursive;font-size:20px;color:#fff;">Connect TON Wallet</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:3px;">Required to receive weekly TON prizes</div>
       </div>
-      <!-- TON Connect UI mounts here -->
-      <div id="ton-connect-button" style="display:flex;justify-content:center;padding:8px 0 4px;"></div>
-      <div class="wallet-options">
-        <div class="w-opt" onclick="connectWallet('Tonkeeper')">
-          <span class="w-ico">💎</span>
-          <div class="w-info"><div class="w-name">Tonkeeper</div><div class="w-desc">Most popular TON wallet</div></div>
-          <span class="w-arrow">›</span>
-        </div>
-        <div class="w-opt" onclick="connectWallet('TON Space')">
-          <span class="w-ico">✈️</span>
-          <div class="w-info"><div class="w-name">TON Space</div><div class="w-desc">Official Telegram Wallet</div></div>
-          <span class="w-arrow">›</span>
-        </div>
-        <div class="w-opt" onclick="connectWallet('MyTonWallet')">
-          <span class="w-ico">🔷</span>
-          <div class="w-info"><div class="w-name">MyTonWallet</div><div class="w-desc">Simple & secure TON wallet</div></div>
-          <span class="w-arrow">›</span>
-        </div>
+
+      <!-- TON Connect official button — DO NOT REPLACE WITH CUSTOM UI -->
+      <!-- This is required by Telegram's blockchain guidelines -->
+      <div id="ton-connect-button" style="display:flex;justify-content:center;padding:20px 14px 8px;min-height:80px;"></div>
+
+      <!-- Connected state info -->
+      <div id="tc-connected-panel" style="display:none;margin:0 14px 10px;padding:12px 14px;background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);border-radius:12px;">
+        <div style="font-size:11px;font-weight:900;color:#00e676;letter-spacing:1px;margin-bottom:6px;">✓ WALLET CONNECTED</div>
+        <div id="tc-addr-short" style="font-size:12px;color:rgba(255,255,255,0.7);font-family:monospace;word-break:break-all;margin-bottom:8px;"></div>
+        <button onclick="disconnectWallet()" style="width:100%;padding:8px;background:rgba(255,60,60,0.12);border:1px solid rgba(255,60,60,0.25);border-radius:8px;color:#ff6b6b;font-size:12px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;touch-action:manipulation;">Disconnect Wallet</button>
       </div>
-      <div style="margin:8px 14px;padding:10px;background:rgba(0,136,204,0.1);border:1px solid rgba(0,136,204,0.25);border-radius:10px;font-size:11px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.5;">
-        🔒 TON Blockchain only. Your wallet address is used solely for prize payouts. We never access your funds.
+
+      <!-- Security note -->
+      <div style="margin:0 14px 10px;padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;font-size:11px;color:rgba(255,255,255,0.4);line-height:1.6;">
+        🔒 TON Blockchain only &nbsp;·&nbsp; Only used for prize payouts &nbsp;·&nbsp; We never access your funds
       </div>
-      <button class="ws-cancel" onclick="closeWallet()">Cancel</button>
+
+      <!-- Privacy policy link (required for App Store compliance) -->
+      <div style="text-align:center;padding:4px 14px 10px;">
+        <span onclick="openPrivacyPolicy()" style="font-size:11px;color:rgba(64,196,255,0.7);cursor:pointer;text-decoration:underline;">Privacy Policy</span>
+        <span style="font-size:11px;color:rgba(255,255,255,0.2);margin:0 6px;">·</span>
+        <span onclick="openTerms()" style="font-size:11px;color:rgba(64,196,255,0.7);cursor:pointer;text-decoration:underline;">Terms of Use</span>
+      </div>
+
+      <button class="ws-cancel" onclick="closeWallet()" style="margin-bottom:8px;">Close</button>
     </div>
   </div>
 
@@ -1105,7 +1109,10 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
     <div style="margin:12px 12px 0;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;">💎 Your TON Wallet (for payouts)</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <div id="wallet-status-badge" style="font-size:11px;font-weight:800;color:#ff8c00;">❌ No wallet</div>
+        <button id="wallet-connect-btn" onclick="openWallet()" style="font-size:10px;font-weight:800;color:#40c4ff;background:rgba(64,196,255,0.12);border:1px solid rgba(64,196,255,0.3);border-radius:6px;padding:3px 8px;cursor:pointer;font-family:'Nunito',sans-serif;touch-action:manipulation;">Connect →</button>
+      </div>
       </div>
       <div style="display:flex;gap:8px;">
         <input id="wallet-input" type="text" placeholder="EQ... your TON wallet address"
@@ -1226,6 +1233,10 @@ canvas#gc { display: block; width: 360px; height: 640px; will-change: transform;
         <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.3);">
           <span>Version 1.0</span>
           <span onclick="helpLink('https://t.me/RocketSurgeGame')" style="color:#40c4ff;cursor:pointer;">@RocketSurgeGame</span>
+        </div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:12px;font-size:11px;">
+          <span onclick="openPrivacyPolicy()" style="color:rgba(64,196,255,0.7);cursor:pointer;text-decoration:underline;">Privacy Policy</span>
+          <span onclick="openTerms()" style="color:rgba(64,196,255,0.7);cursor:pointer;text-decoration:underline;">Terms of Use</span>
         </div>
       </div>
 
@@ -2873,14 +2884,14 @@ function _initTonConnect(){
   if(window.__tcReady) window.__tcInit();
 }
 
-function connectWallet(type){
+function connectWallet(){
   SFX.tap();
-  if(_tonConnectUI){ _tonConnectUI.openModal(); closeWallet(); return; }
-  // Fallback: open wallet app directly
-  const urls={'Tonkeeper':'https://app.tonkeeper.com','TON Space':'https://t.me/wallet','MyTonWallet':'https://mytonwallet.io'};
-  try{ TG.openLink(urls[type]||'https://ton.org/wallets'); }catch(e){ window.open(urls[type]||'https://ton.org/wallets','_blank'); }
-  toast(`Opening ${type}…`,'#40c4ff');
-  setTimeout(()=>{ openSparkSheet(); toast('Paste your TON address below','#40c4ff'); }, 3000);
+  if(_tonConnectUI){
+    _tonConnectUI.openModal();
+  } else {
+    toast('Connecting… please wait','#40c4ff');
+    setTimeout(()=>{ if(_tonConnectUI) _tonConnectUI.openModal(); },1500);
+  }
 }
 
 function disconnectWallet(){
@@ -2894,10 +2905,26 @@ function _restoreWallet(){
 }
 
 function _updateWalletUI(connected){
+  // Spark sheet badge
   const badge=document.getElementById('wallet-status-badge');
-  if(badge){ badge.textContent=connected?'✅ Wallet connected':'❌ No wallet'; badge.style.color=connected?'#00e676':'#ff8c00'; }
+  if(badge){
+    badge.textContent=connected?'✅ Connected':'❌ No wallet';
+    badge.style.color=connected?'#00e676':'#ff8c00';
+  }
+  // Old wallet input (if present)
   const inp=document.getElementById('wallet-input');
   if(inp&&connected&&tonWallet) inp.value=tonWallet;
+  // New TC panel
+  const panel=document.getElementById('tc-connected-panel');
+  const tcBtn=document.getElementById('ton-connect-button');
+  if(panel) panel.style.display=connected?'block':'none';
+  if(tcBtn) tcBtn.style.display=connected?'none':'flex';
+  // Address display
+  const addrEl=document.getElementById('tc-addr-short');
+  if(addrEl&&connected&&tonWallet){
+    const a=tonWallet;
+    addrEl.textContent=a.length>20?a.slice(0,10)+'…'+a.slice(-8):a;
+  }
 }
 
 // ─── TELEGRAM MINI APPS ANALYTICS ───────────────────────────────────
@@ -2909,6 +2936,17 @@ function _trackEvent(event, params={}){
 }
 
 
+function openPrivacyPolicy(){
+  SFX.tap();
+  // Open privacy policy — hosted as a simple Telegram message or external page
+  try{ TG.openLink('https://rocket-surge-82t5.vercel.app/privacy.html'); }
+  catch(e){ window.open('https://rocket-surge-82t5.vercel.app/privacy.html','_blank'); }
+}
+function openTerms(){
+  SFX.tap();
+  try{ TG.openLink('https://rocket-surge-82t5.vercel.app/terms.html'); }
+  catch(e){ window.open('https://rocket-surge-82t5.vercel.app/terms.html','_blank'); }
+}
 function restartGame(){ SFX.tap(); hideGameOver(); G.restart(); }
 
 // ─── CANVAS GAME ENGINE ─────────────────────────────────────────
